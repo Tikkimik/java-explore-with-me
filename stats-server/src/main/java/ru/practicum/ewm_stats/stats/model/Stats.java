@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class Stats {
 
     @Id
-    @Column(name = "stat_id")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -31,7 +31,7 @@ public class Stats {
     private String uri;
 
     @NotNull
-    @Column(name = "id")
+    @Column(name = "ip")
     private String ip;
 
     @Column(name = "timestamp")
