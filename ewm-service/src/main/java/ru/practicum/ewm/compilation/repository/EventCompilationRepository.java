@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface EventCompilationRepository extends JpaRepository<EventCompilation, Long> {
 
-    Optional<EventCompilation> getByEventIdAndCompilationId(Long compId, Long eventId);
+    EventCompilation getByCompilationIdAndEventId(Long compId, Long eventId);
 
     boolean existsByCompilationIdAndEventId(Long compId, Long eventId);
 

@@ -48,10 +48,12 @@ public class CompilationServiceImpl implements CompilationService {
     @Transactional
     public void deleteCompilationEvent(Long compId, Long eventId) {
         checkCompId(compId);
-        Optional<EventCompilation> ec = eventCompilationRepository.getByEventIdAndCompilationId(compId, eventId);
-        if (ec.isEmpty())
-            throw new IncorrectParameterException("there aren't this events id in this compilation");
-        eventCompilationRepository.delete(ec.get());
+        EventCompilation ec = eventCompilationRepository.getByCompilationIdAndEventId(compId, eventId);
+
+        System.out.println("deleteCompilationEvent" + ec.getCompilationId() + "<- com event ->" + ec.getEventId());
+//        if (ec.isEmpty())
+//            throw new IncorrectParameterException("there aren't this events id in this compilation");
+        eventCompilationRepository.deleteById(ec.getId());
     }
 
     @Override
