@@ -1,8 +1,9 @@
 package ru.practicum.ewm.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.user.dto.CreateUserDto;
+import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.repository.UserRepository;
@@ -20,14 +21,23 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDto createUser(CreateUserDto createUserDto) {
-        return toUserDto(userRepository.save(toUser(createUserDto)));
+    public UserDto createUser(UserDto userDto) {
+
+        if (userRepository.existsByName(userDto.getName()))
+            throw new ConflictException("name already exist");
+
+        if ((userDto.getEmail() == null) || (!userDto.getEmail().contains("@")))
+            throw new ConflictException("bad email");
+
+        if (userRepository.existsByEmail(userDto.getEmail()))
+            throw new ConflictException("email already exist");
+
+        return toUserDto(userRepository.save(toUser(userDto)));
     }
 
     @Override
-    public List<UserDto> findUsersByIds(List<Long> userIds) {
-        return userRepository.findUsersByIds(userIds)
-                .stream()
+    public List<UserDto> findUsersByIds(List<Long> ids, PageRequest page) {
+        return userRepository.getUsersByIdIn(ids, page).stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
