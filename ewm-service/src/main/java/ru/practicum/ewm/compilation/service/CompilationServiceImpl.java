@@ -15,7 +15,6 @@ import ru.practicum.ewm.exceptions.UpdateException;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,10 +47,8 @@ public class CompilationServiceImpl implements CompilationService {
     @Transactional
     public void deleteCompilationEvent(Long compId, Long eventId) {
         checkCompId(compId);
-        Optional<EventCompilation> ec = eventCompilationRepository.getByEventIdAndCompilationId(compId, eventId);
-        if (ec.isEmpty())
-            throw new IncorrectParameterException("there aren't this events id in this compilation");
-        eventCompilationRepository.delete(ec.get());
+        EventCompilation ec = eventCompilationRepository.getByCompilationIdAndEventId(compId, eventId);
+        eventCompilationRepository.deleteById(ec.getId());
     }
 
     @Override

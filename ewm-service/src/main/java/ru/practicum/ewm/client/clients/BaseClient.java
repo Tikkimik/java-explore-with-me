@@ -16,7 +16,6 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.POST, path, body);
     }
 
-
     private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, @NonNull T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body);
 
