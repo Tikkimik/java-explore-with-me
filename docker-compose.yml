@@ -8,19 +8,19 @@ services:
       - stats-db
     environment:
       - SERVER_PORT=9090
-      - DB_NAME=enw-stats
+      - DB_NAME=stats-service
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - DB_HOST=stats-server-db
       - DB_PORT=5432
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/enw-stats
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats-service
 
   stats-db:
     image: postgres:14-alpine
     ports:
       - "6543:5432"
     environment:
-      - POSTGRES_DB=enw-stats
+      - POSTGRES_DB=stats-service
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
     volumes:
