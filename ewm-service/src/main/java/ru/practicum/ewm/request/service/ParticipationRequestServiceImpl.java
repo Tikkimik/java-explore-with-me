@@ -15,6 +15,7 @@ import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static ru.practicum.ewm.request.mapper.RequestMapper.toDto;
@@ -47,13 +48,13 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
         Event event = eventRepository.getReferenceById(eventId);
 
-        if (event.getInitiator() == userId)
+        if (Objects.equals(event.getInitiator(), userId))
             throw new UpdateException("you can't make request for your own event");
 
         if (!event.getState().equals("PUBLISHED"))
             throw new UpdateException("Wrong state. Event not published.");
 
-        if (event.getParticipantLimit() == participationRequestsRepository.countParticipationRequestByEventIdAndStatus(event.getId(), "CONFIRMED"))
+        if (Objects.equals(event.getParticipantLimit(), participationRequestsRepository.countParticipationRequestByEventIdAndStatus(event.getId(), "CONFIRMED")))
             throw new UpdateException("Event no places.");
 
         if (participationRequestsRepository.existsByRequesterIdAndEventId(userId, event.getId()))
