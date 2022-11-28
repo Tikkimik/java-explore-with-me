@@ -46,7 +46,7 @@ public class EventServiceImpl implements EventService {
         EventFullDto dto = eventMapper.toEventFullDtoPublished(event);
 
         if (!event.getState().equals("PUBLISHED"))
-            throw new IncorrectParameterException("Event published");
+            throw new IncorrectParameterException("Event published.");
 
         event.setViews(event.getViews() + 1);
         eventRepository.save(event);
@@ -202,19 +202,19 @@ public class EventServiceImpl implements EventService {
             throw new IncorrectParameterException("Wrong user id (userId).");
 
         if (!requestsRepository.existsById(reqId))
-            throw new IncorrectParameterException("Wrong request id (requestId)");
+            throw new IncorrectParameterException("Wrong request id (requestId).");
 
         if (!eventRepository.existsById(eventId))
-            throw new IncorrectParameterException("Wrong event id (eventId)");
+            throw new IncorrectParameterException("Wrong event id (eventId).");
 
         Event event = eventRepository.getReferenceById(eventId);
         if (Objects.equals(event.getParticipantLimit(), requestsRepository.countParticipationRequestByEventIdAndStatus(eventId, RequestStatus.CONFIRMED.toString())))
-            throw new UpdateException("all seats are occupied");
+            throw new UpdateException("all seats are occupied.");
 
         ParticipationRequest request = requestsRepository.getReferenceById(reqId);
 
         if (request.getStatus().equals(RequestStatus.CONFIRMED.toString()))
-            throw new UpdateException("Request already confirmed");
+            throw new UpdateException("Request already confirmed.");
 
         request.setStatus(RequestStatus.CONFIRMED.toString());
         requestsRepository.save(request);
@@ -230,13 +230,13 @@ public class EventServiceImpl implements EventService {
     public RequestDto rejectEventRequest(Long userId, Long eventId, Long reqId) {
 
         if (!eventRepository.existsById(eventId))
-            throw new IncorrectParameterException("Wrong event id (eventId)");
+            throw new IncorrectParameterException("Wrong event id (eventId).");
 
         if (!userRepository.existsById(userId))
             throw new IncorrectParameterException("Wrong user id (userId).");
 
         if (!requestsRepository.existsById(reqId))
-            throw new IncorrectParameterException("Wrong request id (requestId)");
+            throw new IncorrectParameterException("Wrong request id (requestId).");
 
         ParticipationRequest request = requestsRepository.getReferenceById(reqId);
         request.setStatus(RequestStatus.REJECTED.toString());
@@ -266,7 +266,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto adminUpdateEvent(Long eventId, UpdateEventRequest eventDto) {
 
         if (!eventRepository.existsById(eventId))
-            throw new IncorrectParameterException("Wrong event id (eventId)");
+            throw new IncorrectParameterException("Wrong event id (eventId).");
 
         Event eventNew = eventMapper.toEvent(eventDto, eventId);
         Event event = eventRepository.getReferenceById(eventId);
@@ -289,9 +289,9 @@ public class EventServiceImpl implements EventService {
     public EventFullDto adminPublishEvent(Long eventId) {
         Event event = eventRepository.getReferenceById(eventId);
         if (!event.getState().equals(State.PENDING.toString()))
-            throw new UpdateException("Event is not pending");
+            throw new UpdateException("Event is not pending.");
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1)))
-            throw new UpdateException("event will start in less than an hour");
+            throw new UpdateException("Event will start in less than an hour.");
         event.setPublishedOn(LocalDateTime.now());
         event.setState(State.PUBLISHED.toString());
         eventRepository.save(event);
@@ -302,7 +302,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto adminRejectEvent(Long eventId) {
         Event event = eventRepository.getReferenceById(eventId);
         if (!event.getState().equals(State.PENDING.toString()))
-            throw new UpdateException("Event is not pending");
+            throw new UpdateException("Event is not pending.");
         event.setState(State.CANCELED.toString());
         eventRepository.save(event);
         return eventMapper.toEventFullDtoNotPublished(event);

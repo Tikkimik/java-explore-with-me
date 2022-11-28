@@ -56,7 +56,7 @@ public class CompilationServiceImpl implements CompilationService {
     public void createCompilationEvent(Long compId, Long eventId) {
         checkCompId(compId);
         if (eventCompilationRepository.existsByCompilationIdAndEventId(compId, eventId))
-            throw new IncorrectParameterException("this event has already been in this collection");
+            throw new IncorrectParameterException("Event has already been in this collection.");
         eventCompilationRepository.save(new EventCompilation(eventId, compId));
     }
 
@@ -66,7 +66,7 @@ public class CompilationServiceImpl implements CompilationService {
         checkCompId(compId);
         Compilation compilation = compilationRepository.getReferenceById(compId);
         if (compilation.isPinned())
-            throw new UpdateException("compilation has already been pinned");
+            throw new UpdateException("Compilation has already been pinned.");
         compilation.setPinned(true);
         compilationRepository.save(compilation);
     }
@@ -77,7 +77,7 @@ public class CompilationServiceImpl implements CompilationService {
         checkCompId(compId);
         Compilation compilation = compilationRepository.getReferenceById(compId);
         if (!compilation.isPinned())
-            throw new UpdateException("compilation has already been unpinned");
+            throw new UpdateException("Compilation has already been unpinned.");
         compilation.setPinned(false);
         compilationRepository.save(compilation);
     }
@@ -97,6 +97,6 @@ public class CompilationServiceImpl implements CompilationService {
 
     private void checkCompId(Long compId) {
         if (!compilationRepository.existsById(compId))
-            throw new IncorrectParameterException("bad compilation id");
+            throw new IncorrectParameterException("Bad compilation id.");
     }
 }

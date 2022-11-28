@@ -24,13 +24,13 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
 
         if (userRepository.existsByName(userDto.getName()))
-            throw new ConflictException("name already exist");
+            throw new ConflictException("Name already exist.");
 
         if ((userDto.getEmail() == null) || (!userDto.getEmail().contains("@")))
-            throw new ConflictException("bad email");
+            throw new ConflictException("Email address null or not valid.");
 
         if (userRepository.existsByEmail(userDto.getEmail()))
-            throw new ConflictException("email already exist");
+            throw new ConflictException("Email already exist.");
 
         return toUserDto(userRepository.save(toUser(userDto)));
     }

@@ -29,7 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto getCategory(Long catId) {
         if (!categoryRepository.existsById(catId)) {
-            throw new NotFoundParameterException("bad id");
+            throw new NotFoundParameterException("Wrong category id (catId).");
         }
         return CategoryMapper.toCategoryDto(categoryRepository.getReferenceById(catId));
     }
@@ -38,14 +38,14 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto updateCategory(CategoryDto categoryDto) {
 
         if (categoryDto.getName().equals("")) {
-            throw new NotFoundParameterException("sorry, but this name");
+            throw new NotFoundParameterException("Sorry, but this name)");
         }
 
         if (categoryRepository.existsByName(categoryDto.getName()))
-            throw new ConflictException("sorry, but this name is already exist");
+            throw new ConflictException("Name already exist.");
 
         if (!categoryRepository.existsById(categoryDto.getId()))
-            throw new ConflictException("sorry, but category with this id is not exist");
+            throw new ConflictException("Category is not exist.");
 
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
@@ -55,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
         if (categoryRepository.existsByName(categoryDto.getName()))
-            throw new ConflictException("sorry!!!!!!!!!!!!!, but this name is already exist");
+            throw new ConflictException("Name already exist.");
 
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
@@ -64,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long catId) {
 
         if (!categoryRepository.existsById(catId))
-            throw new UpdateException("sorry, but category with this id does not exist");
+            throw new UpdateException("Category is not exist.");
 
         categoryRepository.deleteById(catId);
     }
