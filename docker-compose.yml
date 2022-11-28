@@ -8,19 +8,19 @@ services:
       - stats-server-db
     environment:
       - SERVER_PORT=9090
-      - DB_NAME=explore-with-me-stat
+      - DB_NAME=stats
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - DB_HOST=stats-server-db
       - DB_PORT=5432
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-server-db:5432/explore-with-me-stat
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-server-db:5432/stats
 
   stats-server-db:
     image: postgres:13.7-alpine
     ports:
       - "6542:5432"
     environment:
-      - POSTGRES_DB=explore-with-me-stat
+      - POSTGRES_DB=stats
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
     volumes:
