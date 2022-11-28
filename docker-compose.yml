@@ -8,19 +8,19 @@ services:
       - stats-server-db
     environment:
       - SERVER_PORT=9090
-      - DB_NAME=stats
+      - DB_NAME=explore-with-me-stat
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - DB_HOST=stats-server-db
       - DB_PORT=5432
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-server-db:5432/stats
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-server-db:5432/explore-with-me-stat
 
   stats-server-db:
     image: postgres:13.7-alpine
     ports:
       - "6542:5432"
     environment:
-      - POSTGRES_DB=stats
+      - POSTGRES_DB=explore-with-me-stat
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
     volumes:
@@ -37,13 +37,13 @@ services:
       - stats-server
     environment:
       - SERVER_PORT=8080
-      - explore_with_me.url=http://stats-server:9090
-      - DB_NAME=ewm
+      - EXPLORE_WITH_ME_URL=http://stats-server:9090
+      - DB_NAME=explore-with-me
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - DB_HOST=ewm-service-db
       - DB_PORT=5432
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-service-db:5432/ewm
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-service-db:5432/explore-with-me
 
   ewm-service-db:
     image: postgres:13.7-alpine
@@ -52,7 +52,7 @@ services:
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=ewm
+      - POSTGRES_DB=explore-with-me
     volumes:
       - ./ewm-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     restart: always
