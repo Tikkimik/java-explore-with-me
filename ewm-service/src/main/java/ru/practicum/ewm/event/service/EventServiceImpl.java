@@ -23,6 +23,7 @@ import ru.practicum.ewm.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -170,7 +171,7 @@ public class EventServiceImpl implements EventService {
             throw new IncorrectParameterException("Wrong user id (userId).");
 
         Event event = eventRepository.getReferenceById(eventId);
-        if (event.getInitiator() != userId)
+        if (!Objects.equals(event.getInitiator(), userId))
             throw new IncorrectParameterException("you don't have event with this id");
 
         if (event.getState().equals("PUBLISHED"))
@@ -207,7 +208,7 @@ public class EventServiceImpl implements EventService {
             throw new IncorrectParameterException("Wrong event id (eventId)");
 
         Event event = eventRepository.getReferenceById(eventId);
-        if (event.getParticipantLimit() == requestsRepository.countParticipationRequestByEventIdAndStatus(eventId, RequestStatus.CONFIRMED.toString()))
+        if (Objects.equals(event.getParticipantLimit(), requestsRepository.countParticipationRequestByEventIdAndStatus(eventId, RequestStatus.CONFIRMED.toString())))
             throw new UpdateException("all seats are occupied");
 
         ParticipationRequest request = requestsRepository.getReferenceById(reqId);
@@ -218,7 +219,7 @@ public class EventServiceImpl implements EventService {
         request.setStatus(RequestStatus.CONFIRMED.toString());
         requestsRepository.save(request);
 
-        if (event.getParticipantLimit() == requestsRepository.countParticipationRequestByEventIdAndStatus(eventId, RequestStatus.CONFIRMED.toString()))
+        if (Objects.equals(event.getParticipantLimit(), requestsRepository.countParticipationRequestByEventIdAndStatus(eventId, RequestStatus.CONFIRMED.toString())))
             requestsRepository.getAllByStatusAndEventId(RequestStatus.PENDING.toString(), eventId)
                     .forEach(req -> rejectEventRequest(userId, eventId, req.getId()));
 

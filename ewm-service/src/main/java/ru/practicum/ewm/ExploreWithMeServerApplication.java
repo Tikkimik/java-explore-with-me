@@ -8,5 +8,4 @@ public class ExploreWithMeServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(ExploreWithMeServerApplication.class, args);
     }
-
 }
