@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.State;
 import ru.practicum.ewm.event.dto.*;
@@ -26,6 +27,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static ru.practicum.ewm.category.mapper.CategoryMapper.toCategoryDto;
+import static ru.practicum.ewm.event.mapper.EventMapper.mapToEventFullDtoPublished;
+import static ru.practicum.ewm.location.mapper.LocationMapper.toLocationDto;
+import static ru.practicum.ewm.user.mapper.UserMapper.toUserShortDto;
+
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
@@ -36,6 +42,12 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final ParticipationRequestsRepository requestsRepository;
 
+
+//    private final LocationRepository locationRepository;
+//    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final ParticipationRequestsRepository prRepository;
+
     @Override
     public EventFullDto getEvent(Long eventId) {
 
@@ -43,7 +55,14 @@ public class EventServiceImpl implements EventService {
             throw new IncorrectParameterException("Nothing to return. Wrong event id.");
 
         Event event = eventRepository.getReferenceById(eventId);
-        EventFullDto dto = eventMapper.toEventFullDtoPublished(event);
+
+        EventFullDto dto = mapToEventFullDtoPublished(
+                event,
+                toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                toLocationDto(locationRepository.getReferenceById(event.getLocation()))
+        );
 
         if (!event.getState().equals("PUBLISHED"))
             throw new IncorrectParameterException("Event published.");
@@ -69,15 +88,19 @@ public class EventServiceImpl implements EventService {
         }
 
         List<EventFullDto> list = filterByDate(
-                eventRepository.getEventByStateAndCategoryInAndPaid(
-                                State.PUBLISHED.toString(), categories, paid, pageRequest)
-                        .stream()
-                        .collect(Collectors.toList()), rangeStart, rangeEnd)
-                .stream()
-                .filter(event -> event.getAnnotation().toLowerCase().contains(text.toLowerCase())
-                        || event.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .map(eventMapper::toEventFullDtoPublished)
-                .collect(Collectors.toList());
+            eventRepository.getEventByStateAndCategoryInAndPaid(State.PUBLISHED.toString(), categories, paid, pageRequest)
+                    .stream()
+                    .collect(Collectors.toList()), rangeStart, rangeEnd)
+            .stream()
+            .filter(event -> event.getAnnotation().toLowerCase().contains(text.toLowerCase())
+                    || event.getDescription().toLowerCase().contains(text.toLowerCase()))
+            .map(event -> mapToEventFullDtoPublished(
+                    event,
+                    toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                    prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                    toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                    toLocationDto(locationRepository.getReferenceById(event.getLocation()))))
+            .collect(Collectors.toList());
 
         if (!onlyAvailable)
             return list;
@@ -158,7 +181,14 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.getReferenceById(eventId);
 
         if (event.getState().equals("PUBLISHED")) {
-            return eventMapper.toEventFullDtoPublished(event);
+//            return eventMapper.toEventFullDtoPublished(event);
+            return mapToEventFullDtoPublished(
+                    event,
+                    toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                    prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                    toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                    toLocationDto(locationRepository.getReferenceById(event.getLocation()))
+            );
         } else return eventMapper.toEventFullDtoNotPublished(event);
     }
 
@@ -253,13 +283,23 @@ public class EventServiceImpl implements EventService {
         if (states == null)
             return filterByDate(eventRepository.getEventsByCategoryInAndInitiatorIn(categories, users, pageRequest).toList(), rangeStart, rangeEnd)
                     .stream()
-                    .map(eventMapper::toEventFullDtoPublished)
+                    .map(event -> mapToEventFullDtoPublished(
+                            event,
+                            toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                            prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                            toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                            toLocationDto(locationRepository.getReferenceById(event.getLocation()))))
                     .collect(Collectors.toList());
 
         return filterByDate(eventRepository.getEventsByStateInAndCategoryInAndInitiatorIn(
                 states, categories, users, pageRequest).toList(), rangeStart, rangeEnd)
                 .stream()
-                .map(eventMapper::toEventFullDtoPublished)
+                .map(event -> mapToEventFullDtoPublished(
+                        event,
+                        toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                        prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                        toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                        toLocationDto(locationRepository.getReferenceById(event.getLocation()))))
                 .collect(Collectors.toList());
     }
 
@@ -280,7 +320,14 @@ public class EventServiceImpl implements EventService {
         if (eventNew.getState().equals("PUBLISHED")) {
             eventNew.setPublishedOn(event.getPublishedOn());
             eventRepository.save(eventNew);
-            return eventMapper.toEventFullDtoPublished(eventNew);
+//            return eventMapper.toEventFullDtoPublished(eventNew);
+            return mapToEventFullDtoPublished(
+                    eventNew,
+                    toCategoryDto(categoryRepository.getReferenceById(eventNew.getCategory())),
+                    prRepository.countParticipationRequestByEventIdAndStatus(eventNew.getId(), RequestStatus.CONFIRMED.toString()),
+                    toUserShortDto(userRepository.getReferenceById(eventNew.getInitiator())),
+                    toLocationDto(locationRepository.getReferenceById(eventNew.getLocation()))
+            );
         }
         eventRepository.save(eventNew);
         return eventMapper.toEventFullDtoNotPublished(eventNew);
@@ -296,7 +343,14 @@ public class EventServiceImpl implements EventService {
         event.setPublishedOn(LocalDateTime.now());
         event.setState(State.PUBLISHED.toString());
         eventRepository.save(event);
-        return eventMapper.toEventFullDtoPublished(event);
+//        return eventMapper.toEventFullDtoPublished(event);
+        return mapToEventFullDtoPublished(
+                event,
+                toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                toLocationDto(locationRepository.getReferenceById(event.getLocation()))
+        );
     }
 
     @Override

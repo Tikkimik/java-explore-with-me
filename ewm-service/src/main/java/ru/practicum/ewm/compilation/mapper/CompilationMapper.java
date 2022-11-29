@@ -5,28 +5,19 @@ import org.springframework.stereotype.Component;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.compilation.model.Compilation;
-import ru.practicum.ewm.event.mapper.EventMapper;
-import ru.practicum.ewm.event.repository.EventRepository;
+import ru.practicum.ewm.event.dto.EventShortDto;
 
-import java.util.stream.Collectors;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Component
 public class CompilationMapper {
-    private final EventMapper eventMapper;
-    private final EventRepository eventRepository;
 
-    public Compilation toCompilation(NewCompilationDto compilationDto) {
+    public static Compilation mapToCompilation(NewCompilationDto compilationDto) {
         return new Compilation(compilationDto.isPinned(), compilationDto.getTitle());
     }
 
-    public CompilationDto toCompilationDto(Compilation compilation) {
-        return new CompilationDto(
-                compilation.getId(),
-                eventRepository.getCompilationsEvents(compilation.getId()).stream()
-                        .map(eventMapper::toEventShortDto).collect(Collectors.toList()),
-                compilation.isPinned(),
-                compilation.getTitle()
-        );
+    public static CompilationDto mapToCompilationDto(Compilation compilation, List<EventShortDto> events) {
+        return new CompilationDto(compilation.getId(), events, compilation.isPinned(), compilation.getTitle());
     }
 }
