@@ -10,9 +10,9 @@ import java.util.List;
 @Repository
 public interface StatRepository extends JpaRepository<Stats, Long> {
 
-    List<Stats> getHitsByTimestampAfterAndTimestampBefore(LocalDateTime start, LocalDateTime end);
+    List<Stats> getStatsByTimestampAfterAndTimestampBefore(LocalDateTime start, LocalDateTime end);
 
-    List<Stats> getHitsByTimestampAfterAndTimestampBeforeAndUriIn(LocalDateTime start, LocalDateTime end, List<String> uri);
+    List<Stats> getStatsByTimestampAfterAndTimestampBeforeAndUriIn(LocalDateTime start, LocalDateTime end, List<String> uri);
 
     Long countStatsByUri(String uri);
 

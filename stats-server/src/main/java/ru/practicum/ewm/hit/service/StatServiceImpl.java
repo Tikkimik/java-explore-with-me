@@ -34,9 +34,9 @@ public class StatServiceImpl implements StatService {
         LocalDateTime ends = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         if (uris == null) {
-            returnStat = statRepository.getHitsByTimestampAfterAndTimestampBefore(starts, ends);
+            returnStat = statRepository.getStatsByTimestampAfterAndTimestampBefore(starts, ends);
         } else {
-            returnStat = statRepository.getHitsByTimestampAfterAndTimestampBeforeAndUriIn(starts, ends, uris);
+            returnStat = statRepository.getStatsByTimestampAfterAndTimestampBeforeAndUriIn(starts, ends, uris);
         }
 
         if (unique) {
