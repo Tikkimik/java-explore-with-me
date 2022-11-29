@@ -100,7 +100,7 @@ public class CompilationServiceImpl implements CompilationService {
         List<CompilationDto> compilationDtos = new ArrayList<>();
         Page<Compilation> allByPinned = compilationRepository.findAllByPinned(pinned, pageRequest);
 
-        for(Compilation compilation : allByPinned) {
+        for (Compilation compilation : allByPinned) {
             compilationDtos.add(mapToCompilationDto(compilation, eventRepository.getCompilationsEvents(compilation.getId())
                     .stream()
                     .map(eventMapper::toEventShortDto)
