@@ -34,9 +34,6 @@ public class PublicEventController {
         log.info("Event Client add request in getEvents method.");
         eventClient.addHit(request);
 
-        if (text.isEmpty()) return null;
-        if (categories.isEmpty()) return null;
-
         log.info("Public Event Controller: Get Events with" +
 			" text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}.",
 			text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);

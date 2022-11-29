@@ -5,7 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.category.repository.CategoryRepository;
-import ru.practicum.ewm.event.model.State;
+import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.model.*;
 import ru.practicum.ewm.event.repository.EventRepository;
@@ -82,7 +82,7 @@ public class EventServiceImpl implements EventService {
         }
 
         List<EventFullDto> list = filterByDate(
-            eventRepository.getEventByStateAndCategoryInAndPaid(State.PUBLISHED.toString(), categories, paid, pageRequest)
+            eventRepository.getEventByStateAndCategoryInAndPaid(EventState.PUBLISHED.toString(), categories, paid, pageRequest)
                     .stream()
                     .collect(Collectors.toList()), rangeStart, rangeEnd)
             .stream()
@@ -111,7 +111,6 @@ public class EventServiceImpl implements EventService {
         PageRequest pageRequest = PageRequest.of(from / size, size, Sort.by("id").ascending());
 
         return eventRepository.getAllByInitiator(userId, pageRequest).stream()
-//                .map(eventMapper::toEventShortDto)
                 .map(event -> toEventShortDto(
                         event,
                         toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
@@ -138,7 +137,7 @@ public class EventServiceImpl implements EventService {
 
         event.setCreatedOn(LocalDateTime.now());
         event.setInitiator(userId);
-        event.setState(State.PENDING.toString());
+        event.setState(EventState.PENDING.toString());
         event.setViews(0L);
         return mapToEventFullDtoNotPublished(
                 eventRepository.save(event),
@@ -196,7 +195,6 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.getReferenceById(eventId);
 
         if (event.getState().equals("PUBLISHED")) {
-//            return eventMapper.toEventFullDtoPublished(event);
             return mapToEventFullDtoPublished(
                     event,
                     toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
@@ -230,7 +228,7 @@ public class EventServiceImpl implements EventService {
         if (event.getState().equals("PUBLISHED"))
             throw new UpdateException("Event published");
 
-        event.setState(State.CANCELED.toString());
+        event.setState(EventState.CANCELED.toString());
         eventRepository.save(event);
         return mapToEventFullDtoNotPublished(
                 eventRepository.save(event),
@@ -369,12 +367,12 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto adminPublishEvent(Long eventId) {
         Event event = eventRepository.getReferenceById(eventId);
-        if (!event.getState().equals(State.PENDING.toString()))
+        if (!event.getState().equals(EventState.PENDING.toString()))
             throw new UpdateException("Event is not pending.");
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1)))
             throw new UpdateException("Event will start in less than an hour.");
         event.setPublishedOn(LocalDateTime.now());
-        event.setState(State.PUBLISHED.toString());
+        event.setState(EventState.PUBLISHED.toString());
         eventRepository.save(event);
         return mapToEventFullDtoPublished(
                 event,
@@ -388,9 +386,9 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto adminRejectEvent(Long eventId) {
         Event event = eventRepository.getReferenceById(eventId);
-        if (!event.getState().equals(State.PENDING.toString()))
+        if (!event.getState().equals(EventState.PENDING.toString()))
             throw new UpdateException("Event is not pending.");
-        event.setState(State.CANCELED.toString());
+        event.setState(EventState.CANCELED.toString());
         eventRepository.save(event);
         return mapToEventFullDtoNotPublished(
                 eventRepository.save(event),
@@ -399,7 +397,6 @@ public class EventServiceImpl implements EventService {
                 toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
                 toLocationDto(locationRepository.getReferenceById(event.getLocation()))
         );
-
     }
 
     private List<Event> filterByDate(List<Event> events, String start, String end) {
