@@ -4,30 +4,31 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.hit.dto.CreateStatDto;
 import ru.practicum.ewm.hit.dto.ReturnStatDto;
-import ru.practicum.ewm.hit.mapper.StatMapper;
 import ru.practicum.ewm.hit.model.Stats;
 import ru.practicum.ewm.hit.repository.StatRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static ru.practicum.ewm.hit.mapper.StatMapper.returnStatDto;
+import static ru.practicum.ewm.hit.mapper.StatMapper.toStats;
 
 @Service
 @RequiredArgsConstructor
 public class StatServiceImpl implements StatService {
 
     private final StatRepository statRepository;
-    private final StatMapper statMapper;
 
     @Override
     public void addStat(CreateStatDto createStat) {
-        statRepository.save(statMapper.toStats(createStat));
+        statRepository.save(toStats(createStat));
     }
 
     @Override
     public List<ReturnStatDto> get(String start, String end, List<String> uris, boolean unique) {
         List<Stats> returnStat;
+        List<ReturnStatDto> returnStatDto = new ArrayList<>();
         Map<String, Stats> uniqueIpAddress;
         LocalDateTime starts = LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         LocalDateTime ends = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -44,8 +45,10 @@ public class StatServiceImpl implements StatService {
             returnStat = new ArrayList<>(uniqueIpAddress.values());
         }
 
-        return returnStat.stream()
-                .map(statMapper::returnStatDto)
-                .collect(Collectors.toList());
+        for (Stats stats : returnStat) {
+            returnStatDto.add(returnStatDto(stats, statRepository.countHitsByUri(stats.getUri())));
+        }
+
+        return returnStatDto;
     }
 }
