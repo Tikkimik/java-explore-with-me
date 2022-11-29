@@ -20,19 +20,22 @@ public class PublicEventController {
     private final EventService eventService;
 
     @GetMapping
-    public List<EventFullDto> getEvents(@RequestParam String text,
-                                         @RequestParam List<Long> categories,
-                                         @RequestParam boolean paid,
+    public List<EventFullDto> getEvents(@RequestParam(required = false) String text,
+                                         @RequestParam(required = false) List<Long> categories,
+                                         @RequestParam(required = false) boolean paid,
                                          @RequestParam(required = false) String rangeStart,
                                          @RequestParam(required = false) String rangeEnd,
                                          @RequestParam(required = false) String sort,
-                                         @RequestParam(defaultValue = "false") boolean onlyAvailable,
+                                         @RequestParam(required = false, defaultValue = "false") boolean onlyAvailable,
                                          @RequestParam(required = false, defaultValue = "0") int from,
                                          @RequestParam(required = false, defaultValue = "10") int size,
                                          HttpServletRequest request) {
 
-        log.info("Event Client add request.");
+        log.info("Event Client add request in getEvents method.");
         eventClient.addHit(request);
+
+        if (text.isEmpty()) return null;
+        if (categories.isEmpty()) return null;
 
         log.info("Public Event Controller: Get Events with" +
 			" text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}.",
@@ -42,8 +45,12 @@ public class PublicEventController {
     }
 
     @GetMapping("/{eventId}")
-    public EventFullDto getEvent(@PathVariable Long eventId, HttpServletRequest request) {
+    public EventFullDto getEvent(@PathVariable Long eventId,
+                                 HttpServletRequest request) {
+
+        log.info("Event Client add request in getEvent method.");
         eventClient.addHit(request);
+
         return eventService.getEvent(eventId);
     }
 }

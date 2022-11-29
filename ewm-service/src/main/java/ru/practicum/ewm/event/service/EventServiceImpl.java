@@ -67,6 +67,7 @@ public class EventServiceImpl implements EventService {
                 pageRequest = PageRequest.of(from / size, size, Sort.by(sort).ascending());
             }
         }
+
         List<EventFullDto> list = filterByDate(
                 eventRepository.getEventByStateAndCategoryInAndPaid(
                                 State.PUBLISHED.toString(), categories, paid, pageRequest)
