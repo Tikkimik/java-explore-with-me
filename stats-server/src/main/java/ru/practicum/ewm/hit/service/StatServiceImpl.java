@@ -46,7 +46,7 @@ public class StatServiceImpl implements StatService {
         }
 
         for (Stats stats : returnStat) {
-            returnStatDto.add(returnStatDto(stats, statRepository.countHitsByUri(stats.getUri())));
+            returnStatDto.add(returnStatDto(stats, statRepository.countStatsByUri(stats.getUri())));
         }
 
         return returnStatDto;

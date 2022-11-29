@@ -11,8 +11,13 @@ import ru.practicum.ewm.hit.model.Stats;
 public class StatMapper {
 
     public static Stats toStats(CreateStatDto statDto) {
-        return new Stats(statDto.getApp(), statDto.getUri(), statDto.getIp(), statDto.getTimestamp());
+        return new Stats(
+                statDto.getApp(),
+                statDto.getUri(),
+                statDto.getIp(),
+                statDto.getTimestamp());
     }
+
 
     public static ReturnStatDto returnStatDto(Stats stats, Long hits) {
         return new ReturnStatDto(stats.getApp(), stats.getUri(), hits);

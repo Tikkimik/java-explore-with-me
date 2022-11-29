@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface StatRepository  extends JpaRepository<Stats, Long> {
+public interface StatRepository extends JpaRepository<Stats, Long> {
 
     List<Stats> getHitsByTimestampAfterAndTimestampBefore(LocalDateTime start, LocalDateTime end);
 
     List<Stats> getHitsByTimestampAfterAndTimestampBeforeAndUriIn(LocalDateTime start, LocalDateTime end, List<String> uri);
 
-    Long countHitsByUri(String uri);
+    Long countStatsByUri(String uri);
 
 }
