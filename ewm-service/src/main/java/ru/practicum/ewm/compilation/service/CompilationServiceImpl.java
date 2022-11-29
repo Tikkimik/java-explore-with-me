@@ -5,30 +5,40 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.dto.NewCompilationDto;
-import ru.practicum.ewm.compilation.model.*;
+import ru.practicum.ewm.compilation.model.Compilation;
+import ru.practicum.ewm.compilation.model.EventCompilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
 import ru.practicum.ewm.compilation.repository.EventCompilationRepository;
-import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exceptions.IncorrectParameterException;
 import ru.practicum.ewm.exceptions.UpdateException;
+import ru.practicum.ewm.request.model.RequestStatus;
+import ru.practicum.ewm.request.repository.ParticipationRequestsRepository;
+import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.ewm.category.mapper.CategoryMapper.toCategoryDto;
 import static ru.practicum.ewm.compilation.mapper.CompilationMapper.mapToCompilation;
 import static ru.practicum.ewm.compilation.mapper.CompilationMapper.mapToCompilationDto;
+import static ru.practicum.ewm.event.mapper.EventMapper.toEventShortDto;
+import static ru.practicum.ewm.user.mapper.UserMapper.toUserShortDto;
 
 @Service
 @RequiredArgsConstructor
 public class CompilationServiceImpl implements CompilationService {
-    private final CompilationRepository compilationRepository;
-    private final EventCompilationRepository eventCompilationRepository;
+
+    private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    private final EventMapper eventMapper;
+    private final CategoryRepository categoryRepository;
+    private final CompilationRepository compilationRepository;
+    private final ParticipationRequestsRepository prRepository;
+    private final EventCompilationRepository eventCompilationRepository;
 
     @Override
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
@@ -39,7 +49,12 @@ public class CompilationServiceImpl implements CompilationService {
             eventCompilationRepository.save(eventCompilation);
         }
         return mapToCompilationDto(compilation, eventRepository.getCompilationsEvents(compilation.getId()).stream()
-                .map(eventMapper::toEventShortDto)
+                .map(event -> toEventShortDto(
+                        event,
+                        toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                        prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                        toUserShortDto(userRepository.getReferenceById(event.getInitiator()))
+                ))
                 .collect(Collectors.toList()));
     }
 
@@ -90,7 +105,12 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.getReferenceById(compId);
         return mapToCompilationDto(compilation, eventRepository.getCompilationsEvents(compilation.getId())
                 .stream()
-                .map(eventMapper::toEventShortDto)
+                .map(event -> toEventShortDto(
+                        event,
+                        toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                        prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                        toUserShortDto(userRepository.getReferenceById(event.getInitiator()))
+                ))
                 .collect(Collectors.toList()));
     }
 
@@ -103,7 +123,12 @@ public class CompilationServiceImpl implements CompilationService {
         for (Compilation compilation : allByPinned) {
             compilationDtos.add(mapToCompilationDto(compilation, eventRepository.getCompilationsEvents(compilation.getId())
                     .stream()
-                    .map(eventMapper::toEventShortDto)
+                    .map(event -> toEventShortDto(
+                            event,
+                            toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                            prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                            toUserShortDto(userRepository.getReferenceById(event.getInitiator()))
+                    ))
                     .collect(Collectors.toList())));
         }
 

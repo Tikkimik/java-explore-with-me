@@ -5,7 +5,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.category.repository.CategoryRepository;
-import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.State;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.model.*;
@@ -28,7 +27,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static ru.practicum.ewm.category.mapper.CategoryMapper.toCategoryDto;
-import static ru.practicum.ewm.event.mapper.EventMapper.mapToEventFullDtoPublished;
+import static ru.practicum.ewm.event.mapper.EventMapper.*;
 import static ru.practicum.ewm.location.mapper.LocationMapper.toLocationDto;
 import static ru.practicum.ewm.user.mapper.UserMapper.toUserShortDto;
 
@@ -36,17 +35,12 @@ import static ru.practicum.ewm.user.mapper.UserMapper.toUserShortDto;
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
 
-    private final EventMapper eventMapper;
-    private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
     private final LocationRepository locationRepository;
-    private final ParticipationRequestsRepository requestsRepository;
-
-
-//    private final LocationRepository locationRepository;
-//    private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestsRepository prRepository;
+    private final ParticipationRequestsRepository requestsRepository;
 
     @Override
     public EventFullDto getEvent(Long eventId) {
@@ -117,7 +111,13 @@ public class EventServiceImpl implements EventService {
         PageRequest pageRequest = PageRequest.of(from / size, size, Sort.by("id").ascending());
 
         return eventRepository.getAllByInitiator(userId, pageRequest).stream()
-                .map(eventMapper::toEventShortDto)
+//                .map(eventMapper::toEventShortDto)
+                .map(event -> toEventShortDto(
+                        event,
+                        toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                        prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                        toUserShortDto(userRepository.getReferenceById(event.getInitiator()))
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -128,7 +128,10 @@ public class EventServiceImpl implements EventService {
             throw new IncorrectParameterException("Wrong user id (userId).");
 
         locationRepository.save(LocationMapper.toLocation(eventDto.getLocation()));
-        Event event = eventMapper.toEvent(eventDto);
+
+        Event event = toEvent(eventDto, locationRepository.getLocationByLatAndLon(
+                eventDto.getLocation().getLat(), eventDto.getLocation().getLon()).getId()
+        );
 
         if (!event.getEventDate().isAfter(LocalDateTime.now().plusHours(2)))
             throw new IncorrectParameterException("Next event can start in at least 2 hours");
@@ -137,7 +140,13 @@ public class EventServiceImpl implements EventService {
         event.setInitiator(userId);
         event.setState(State.PENDING.toString());
         event.setViews(0L);
-        return eventMapper.toEventFullDtoNotPublished(eventRepository.save(event));
+        return mapToEventFullDtoNotPublished(
+                eventRepository.save(event),
+                toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                toLocationDto(locationRepository.getReferenceById(event.getLocation()))
+        );
     }
 
     @Override
@@ -150,7 +159,7 @@ public class EventServiceImpl implements EventService {
         if (!eventRepository.existsById(eventDto.getEventId()))
             throw new IncorrectParameterException("Wrong event id (eventId)");
 
-        Event eventNew = eventMapper.toEvent(eventDto);
+        Event eventNew = toEvent(eventDto);
         Event event = eventRepository.getReferenceById(eventDto.getEventId());
 
         if (event.getState().equals("PUBLISHED"))
@@ -166,7 +175,13 @@ public class EventServiceImpl implements EventService {
         eventNew.setState(event.getState());
         eventNew.setViews(event.getViews());
         eventRepository.save(eventNew);
-        return eventMapper.toEventFullDtoNotPublished(eventNew);
+        return mapToEventFullDtoNotPublished(
+                eventRepository.save(eventNew),
+                toCategoryDto(categoryRepository.getReferenceById(eventNew.getCategory())),
+                prRepository.countParticipationRequestByEventIdAndStatus(eventNew.getId(), RequestStatus.CONFIRMED.toString()),
+                toUserShortDto(userRepository.getReferenceById(eventNew.getInitiator())),
+                toLocationDto(locationRepository.getReferenceById(eventNew.getLocation()))
+        );
     }
 
     @Override
@@ -189,7 +204,14 @@ public class EventServiceImpl implements EventService {
                     toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
                     toLocationDto(locationRepository.getReferenceById(event.getLocation()))
             );
-        } else return eventMapper.toEventFullDtoNotPublished(event);
+        } else
+            return mapToEventFullDtoNotPublished(
+                    eventRepository.save(event),
+                    toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                    prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                    toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                    toLocationDto(locationRepository.getReferenceById(event.getLocation()))
+            );
     }
 
     @Override
@@ -210,7 +232,13 @@ public class EventServiceImpl implements EventService {
 
         event.setState(State.CANCELED.toString());
         eventRepository.save(event);
-        return eventMapper.toEventFullDtoNotPublished(event);
+        return mapToEventFullDtoNotPublished(
+                eventRepository.save(event),
+                toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                toLocationDto(locationRepository.getReferenceById(event.getLocation()))
+        );
     }
 
     @Override
@@ -309,7 +337,7 @@ public class EventServiceImpl implements EventService {
         if (!eventRepository.existsById(eventId))
             throw new IncorrectParameterException("Wrong event id (eventId).");
 
-        Event eventNew = eventMapper.toEvent(eventDto, eventId);
+        Event eventNew = toEvent(eventDto, eventId);
         Event event = eventRepository.getReferenceById(eventId);
         eventNew.setRequestModeration(event.isRequestModeration());
         eventNew.setLocation(event.getLocation());
@@ -320,7 +348,6 @@ public class EventServiceImpl implements EventService {
         if (eventNew.getState().equals("PUBLISHED")) {
             eventNew.setPublishedOn(event.getPublishedOn());
             eventRepository.save(eventNew);
-//            return eventMapper.toEventFullDtoPublished(eventNew);
             return mapToEventFullDtoPublished(
                     eventNew,
                     toCategoryDto(categoryRepository.getReferenceById(eventNew.getCategory())),
@@ -330,7 +357,13 @@ public class EventServiceImpl implements EventService {
             );
         }
         eventRepository.save(eventNew);
-        return eventMapper.toEventFullDtoNotPublished(eventNew);
+        return mapToEventFullDtoNotPublished(
+                eventRepository.save(eventNew),
+                toCategoryDto(categoryRepository.getReferenceById(eventNew.getCategory())),
+                prRepository.countParticipationRequestByEventIdAndStatus(eventNew.getId(), RequestStatus.CONFIRMED.toString()),
+                toUserShortDto(userRepository.getReferenceById(eventNew.getInitiator())),
+                toLocationDto(locationRepository.getReferenceById(eventNew.getLocation()))
+        );
     }
 
     @Override
@@ -343,7 +376,6 @@ public class EventServiceImpl implements EventService {
         event.setPublishedOn(LocalDateTime.now());
         event.setState(State.PUBLISHED.toString());
         eventRepository.save(event);
-//        return eventMapper.toEventFullDtoPublished(event);
         return mapToEventFullDtoPublished(
                 event,
                 toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
@@ -360,7 +392,14 @@ public class EventServiceImpl implements EventService {
             throw new UpdateException("Event is not pending.");
         event.setState(State.CANCELED.toString());
         eventRepository.save(event);
-        return eventMapper.toEventFullDtoNotPublished(event);
+        return mapToEventFullDtoNotPublished(
+                eventRepository.save(event),
+                toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
+                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                toLocationDto(locationRepository.getReferenceById(event.getLocation()))
+        );
+
     }
 
     private List<Event> filterByDate(List<Event> events, String start, String end) {

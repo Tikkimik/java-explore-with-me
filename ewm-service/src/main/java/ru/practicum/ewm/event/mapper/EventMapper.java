@@ -3,21 +3,13 @@ package ru.practicum.ewm.event.mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.category.mapper.CategoryMapper;
-import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.dto.UpdateEventRequest;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.location.dto.LocationDto;
-import ru.practicum.ewm.location.mapper.LocationMapper;
-import ru.practicum.ewm.location.repository.LocationRepository;
-import ru.practicum.ewm.request.repository.ParticipationRequestsRepository;
-import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.user.dto.UserShortDto;
-import ru.practicum.ewm.user.mapper.UserMapper;
-import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,12 +20,7 @@ public class EventMapper {
 
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private final LocationRepository locationRepository;
-    private final UserRepository userRepository;
-    private final CategoryRepository categoryRepository;
-    private final ParticipationRequestsRepository prRepository;
-
-    public Event toEvent(UpdateEventRequest eventDto) {
+    public static Event toEvent(UpdateEventRequest eventDto) {
         return new Event(
                 eventDto.getEventId(),
                 eventDto.getAnnotation(),
@@ -46,15 +33,14 @@ public class EventMapper {
         );
     }
 
-    public Event toEvent(NewEventDto eventDto) {
+    public static Event toEvent(NewEventDto eventDto, Long location) {
 
         return new Event(
                 eventDto.getAnnotation(),
                 eventDto.getCategory(),
                 eventDto.getDescription(),
                 LocalDateTime.parse(eventDto.getEventDate(), dtf),
-                locationRepository.getLocationByLatAndLon(
-                        eventDto.getLocation().getLat(), eventDto.getLocation().getLon()).getId(),
+                location,
                 eventDto.isPaid(),
                 eventDto.getParticipantLimit(),
                 eventDto.isRequestModeration(),
@@ -62,7 +48,7 @@ public class EventMapper {
         );
     }
 
-    public Event toEvent(UpdateEventRequest eventDto, long eventId) {
+    public static Event toEvent(UpdateEventRequest eventDto, long eventId) {
         return new Event(
                 eventId,
                 eventDto.getAnnotation(),
@@ -75,19 +61,24 @@ public class EventMapper {
         );
     }
 
-    public EventFullDto toEventFullDtoNotPublished(Event event) {
+    public static EventFullDto mapToEventFullDtoNotPublished(Event event,
+                                                             CategoryDto categoryDto,
+                                                             Long confirmedRequests,
+                                                             UserShortDto initiator,
+                                                             LocationDto location) {
         return new EventFullDto(
                 event.getAnnotation(),
-                CategoryMapper.toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
-                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                categoryDto,
+                confirmedRequests,
                 dtf.format(event.getCreatedOn()),
                 event.getDescription(),
                 dtf.format(event.getEventDate()),
                 event.getId(),
-                UserMapper.toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
-                LocationMapper.toLocationDto(locationRepository.getReferenceById(event.getLocation())),
+                initiator,
+                location,
                 event.isPaid(),
                 event.getParticipantLimit(),
+                null,
                 event.isRequestModeration(),
                 event.getState(),
                 event.getTitle(),
@@ -95,27 +86,6 @@ public class EventMapper {
         );
     }
 
-//    public EventFullDto toEventFullDtoPublished(Event event) {
-//        return new EventFullDto(
-//                event.getAnnotation(),
-//                CategoryMapper.toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
-//                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
-//                dtf.format(event.getCreatedOn()),
-//                event.getDescription(),
-//                dtf.format(event.getEventDate()),
-//                event.getId(),
-//                UserMapper.toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
-//                LocationMapper.toLocationDto(locationRepository.getReferenceById(event.getLocation())),
-//                event.isPaid(),
-//                event.getParticipantLimit(),
-//                dtf.format(event.getPublishedOn()),
-//                event.isRequestModeration(),
-//                event.getState(),
-//                event.getTitle(),
-//                event.getViews()
-//        );
-//    }
-///
     public static EventFullDto mapToEventFullDtoPublished(Event event,
                                                           CategoryDto categoryDto,
                                                           Long confirmedRequests,
@@ -124,17 +94,13 @@ public class EventMapper {
         return new EventFullDto(
                 event.getAnnotation(),
                 categoryDto,
-                //CategoryMapper.toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
                 confirmedRequests,
-                //prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
                 dtf.format(event.getCreatedOn()),
                 event.getDescription(),
                 dtf.format(event.getEventDate()),
                 event.getId(),
                 initiator,
-//                UserMapper.toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
                 location,
-//                LocationMapper.toLocationDto(locationRepository.getReferenceById(event.getLocation())),
                 event.isPaid(),
                 event.getParticipantLimit(),
                 dtf.format(event.getPublishedOn()),
@@ -145,14 +111,17 @@ public class EventMapper {
         );
     }
 
-    public EventShortDto toEventShortDto(Event event) {
+    public static EventShortDto toEventShortDto(Event event,
+                                         CategoryDto category,
+                                         Long confirmedRequests,
+                                         UserShortDto initiator) {
         return new EventShortDto(
                 event.getAnnotation(),
-                CategoryMapper.toCategoryDto(categoryRepository.getReferenceById(event.getCategory())),
-                prRepository.countParticipationRequestByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED.toString()),
+                category,
+                confirmedRequests,
                 dtf.format(event.getEventDate()),
                 event.getId(),
-                UserMapper.toUserShortDto(userRepository.getReferenceById(event.getInitiator())),
+                initiator,
                 event.isPaid(),
                 event.getTitle(),
                 event.getViews()
