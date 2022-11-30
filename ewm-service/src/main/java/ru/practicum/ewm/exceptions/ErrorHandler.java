@@ -6,20 +6,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice
 @Slf4j
+@RestControllerAdvice
 public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleIncorrectParameterException(final IncorrectParameterException e) {
-        log.warn(e.getMessage());
-        return new ApiError(HttpStatus.BAD_REQUEST, e.getMessage(), e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleCreatingException(final CreatingException e) {
         log.warn(e.getMessage());
         return new ApiError(HttpStatus.BAD_REQUEST, e.getMessage(), e.getMessage());
     }

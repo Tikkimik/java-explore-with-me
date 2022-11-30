@@ -25,25 +25,4 @@ public class EventFullDto {
     private String state;
     private String title;
     private Long views;
-
-//    public EventFullDto(String annotation, CategoryDto category, Long confirmedRequests, String createdOn,
-//                        String description, String eventDate, Long id, UserShortDto initiator, LocationDto location,
-//                        boolean paid, Long participantLimit, boolean requestModeration, String state, String title,
-//                        Long views) {
-//        this.annotation = annotation;
-//        this.category = category;
-//        this.confirmedRequests = confirmedRequests;
-//        this.createdOn = createdOn;
-//        this.description = description;
-//        this.eventDate = eventDate;
-//        this.id = id;
-//        this.initiator = initiator;
-//        this.location = location;
-//        this.paid = paid;
-//        this.participantLimit = participantLimit;
-//        this.requestModeration = requestModeration;
-//        this.state = state;
-//        this.title = title;
-//        this.views = views;
-//    }
 }

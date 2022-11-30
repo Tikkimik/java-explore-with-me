@@ -28,7 +28,6 @@ public class AdminEventController {
 
         log.info("Admin Search Events with users={}, states={}, categories={}, " +
             "rangeStart={}, rangeEnd={}, from={}, size={}.", users, states, categories, rangeStart, rangeEnd, from, size);
-
         return eventService.adminSearchEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
