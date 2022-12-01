@@ -7,6 +7,7 @@ import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventRequest;
 import ru.practicum.ewm.event.service.EventService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
@@ -33,7 +34,7 @@ public class AdminEventController {
 
     @PutMapping("/{eventId}")
     public EventFullDto adminUpdateEvent(@PathVariable Long eventId,
-                               @RequestBody UpdateEventRequest eventDto) {
+                               @Valid @RequestBody UpdateEventRequest eventDto) {
         log.info("Admin Update Event with eventId={}.", eventId);
         return eventService.adminUpdateEvent(eventId, eventDto);
     }

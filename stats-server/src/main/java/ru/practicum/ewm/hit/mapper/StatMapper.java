@@ -22,5 +22,4 @@ public class StatMapper {
     public static ReturnStatDto returnStatDto(Stats stats, Long hits) {
         return new ReturnStatDto(stats.getApp(), stats.getUri(), hits);
     }
-
 }

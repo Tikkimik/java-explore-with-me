@@ -43,5 +43,4 @@ public class Stats {
         this.ip = ip;
         this.timestamp = timestamp;
     }
-
 }
