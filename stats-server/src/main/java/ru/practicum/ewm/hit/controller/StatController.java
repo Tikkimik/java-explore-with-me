@@ -20,7 +20,7 @@ public class StatController {
     @PostMapping
     @RequestMapping("/hit")
     public void addStat(@Valid @RequestBody CreateStatDto createStatDto) {
-        log.info("add hit im stat service.");
+        log.info("add hit in stat service.");
         statService.addStat(createStatDto);
     }
 
