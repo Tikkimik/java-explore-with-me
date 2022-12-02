@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
+import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.NotFoundParameterException;
@@ -33,10 +34,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto getCategory(Long catId) {
-        if (!categoryRepository.existsById(catId)) {
-            throw new NotFoundParameterException("Wrong category id (catId).");
-        }
-        return toCategoryDto(categoryRepository.getReferenceById(catId));
+        Category category = categoryRepository.findById(catId).orElseThrow(() -> new NotFoundParameterException("Wrong category id (catId)."));
+        return toCategoryDto(category);
     }
 
     @Override
@@ -57,7 +56,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto createCategory(CategoryDto categoryDto) {
-
 
         if (categoryRepository.existsByName(categoryDto.getName()))
             throw new ConflictException("Name already exist.");

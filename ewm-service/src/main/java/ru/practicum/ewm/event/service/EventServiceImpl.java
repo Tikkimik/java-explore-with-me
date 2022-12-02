@@ -186,9 +186,6 @@ public class EventServiceImpl implements EventService {
         if (!userRepository.existsById(userId))
             throw new IncorrectParameterException("Wrong user id (userId).");
 
-        if (!requestsRepository.existsById(reqId))
-            throw new IncorrectParameterException("Wrong request id (requestId).");
-
         Event event = eventRepository.findById(eventId).orElseThrow(() ->
                 new IncorrectParameterException("Wrong event id (eventId)."));
 
@@ -198,7 +195,8 @@ public class EventServiceImpl implements EventService {
         if (Objects.equals(participantLimit, confirmedRequests))
             throw new UpdateException("all seats are occupied.");
 
-        ParticipationRequest request = requestsRepository.getReferenceById(reqId);
+        ParticipationRequest request = requestsRepository.findById(reqId).orElseThrow(() ->
+                new IncorrectParameterException("Wrong request id (reqId)."));
 
         if (request.getStatus().equals(RequestStatus.CONFIRMED.toString()))
             throw new UpdateException("Request already confirmed.");
