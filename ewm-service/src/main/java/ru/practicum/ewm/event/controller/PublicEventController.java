@@ -3,7 +3,7 @@ package ru.practicum.ewm.event.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.client.clients.EventClient;
+import ru.practicum.ewm.stats.clients.EventClient;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.service.EventService;
 
@@ -31,7 +31,7 @@ public class PublicEventController {
                                          @RequestParam(required = false, defaultValue = "10") int size,
                                          HttpServletRequest request) {
 
-        log.info("Event Client add request in getEvents method.");
+        log.info("Event Client add request in getEvents method with={}.", request);
         eventClient.addHit(request);
 
         log.info("Public Event Controller: Get Events with" +
@@ -45,7 +45,7 @@ public class PublicEventController {
     public EventFullDto getEvent(@PathVariable Long eventId,
                                  HttpServletRequest request) {
 
-        log.info("Event Client add request in getEvent method.");
+        log.info("Event Client add request in getEvent method with={}.", request);
         eventClient.addHit(request);
 
         return eventService.getEvent(eventId);

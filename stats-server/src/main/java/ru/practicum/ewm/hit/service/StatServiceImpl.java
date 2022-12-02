@@ -33,34 +33,4 @@ public class StatServiceImpl implements StatService {
             return statRepository.getAll(starts, ends, uris);
         }
     }
-
-//    @Override
-//    public List<ReturnStatDto> get(String start, String end, List<String> uris, boolean unique) {
-//        List<Stats> returnStat;
-//
-//        List<ReturnStatDto> returnStatDto = new ArrayList<>();
-//
-//        Map<String, Stats> uniqueIpAddress;
-//
-//        LocalDateTime starts = LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//        LocalDateTime ends = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//
-//        if (uris == null) {
-//            returnStat = statRepository.getStatsByTimestampAfterAndTimestampBefore(starts, ends);
-//        } else {
-//            returnStat = statRepository.getStatsByTimestampAfterAndTimestampBeforeAndUriIn(starts, ends, uris);
-//        }
-//
-//        if (unique) {
-//            uniqueIpAddress = new HashMap<>();
-//            returnStat.forEach(stats -> uniqueIpAddress.put(stats.getIp(), stats));
-//            returnStat = new ArrayList<>(uniqueIpAddress.values());
-//        }
-//
-//        for (Stats stats : returnStat) {
-//            returnStatDto.add(returnStatDto(stats, statRepository.countStatsByUri(stats.getUri())));
-//        }
-//
-//        return returnStatDto;
-//    }
 }

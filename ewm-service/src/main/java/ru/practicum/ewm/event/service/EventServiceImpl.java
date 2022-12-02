@@ -73,14 +73,15 @@ public class EventServiceImpl implements EventService {
 
         if (rangeStart != null) start = LocalDateTime.parse(rangeStart, dtf);
         if (rangeEnd != null) end = LocalDateTime.parse(rangeEnd, dtf);
+        if (text != null) text = text.toLowerCase();
 
         Page<Event> list;
 
         if (sort.equals("VIEWS")) {
-            list = eventRepository.findByParams(text.toLowerCase(), categories, paid, start, end,
+            list = eventRepository.findByParams(text, categories, paid, start, end,
                     onlyAvailable, PageRequest.of(from, size, Sort.by("views").ascending()));
         } else {
-            list = eventRepository.findByParams(text.toLowerCase(), categories, paid, start, end,
+            list = eventRepository.findByParams(text, categories, paid, start, end,
                     onlyAvailable, PageRequest.of(from, size, Sort.by("eventDate").ascending()));
         }
 

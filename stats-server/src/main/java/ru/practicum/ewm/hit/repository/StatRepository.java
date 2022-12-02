@@ -27,7 +27,7 @@ public interface StatRepository extends JpaRepository<Stats, Long> {
             "GROUP BY s.app, s.uri ")
     List<ReturnStatDto> getAllUniqueIp(LocalDateTime start, LocalDateTime end, List<String> uri);
 
-    @Query("SELECT new ru.practicum.ewm.hit.dto.ReturnStatDto(s.app, s.uri, count (distinct s.ip)) " +
+    @Query("SELECT new ru.practicum.ewm.hit.dto.ReturnStatDto(s.app, s.uri, count (s.ip)) " +
             "FROM Stats as s " +
             "WHERE s.timestamp BETWEEN ?1 AND ?2 " +
             "AND s.uri IN ?3 " +
