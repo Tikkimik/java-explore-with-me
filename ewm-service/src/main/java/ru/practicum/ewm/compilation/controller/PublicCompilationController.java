@@ -2,6 +2,8 @@ package ru.practicum.ewm.compilation.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.service.CompilationService;
@@ -19,8 +21,9 @@ public class PublicCompilationController {
     public List<CompilationDto> getCompilations(@RequestParam(required = false) boolean pinned,
                                        @RequestParam(required = false, defaultValue = "0") int from,
                                        @RequestParam(required = false, defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(from, size);
         log.info("Get Compilations with from={}, size={}, pinned={}.", from, size, pinned);
-        return compilationService.getCompilations(pinned, from, size);
+        return compilationService.getCompilations(pinned, pageable);
     }
 
     @GetMapping("/{compId}")

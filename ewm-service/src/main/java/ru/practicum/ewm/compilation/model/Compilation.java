@@ -1,11 +1,10 @@
 package ru.practicum.ewm.compilation.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import ru.practicum.ewm.event.model.Event;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,8 +25,8 @@ public class Compilation {
     @Column(name = "title")
     private String title;
 
-    public Compilation(boolean pinned, String title) {
-        this.pinned = pinned;
-        this.title = title;
-    }
+    @ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(name = "compilation_events", joinColumns = @JoinColumn(name = "compilation_events_id"), inverseJoinColumns = @JoinColumn(name = "event_id"))
+    private List<Event> eventList;
+
 }

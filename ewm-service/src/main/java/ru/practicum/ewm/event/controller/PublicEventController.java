@@ -25,7 +25,7 @@ public class PublicEventController {
                                          @RequestParam(required = false) boolean paid,
                                          @RequestParam(required = false) String rangeStart,
                                          @RequestParam(required = false) String rangeEnd,
-                                         @RequestParam(required = false) String sort,
+                                         @RequestParam(required = false, defaultValue = "EVENT_DATE") String sort,
                                          @RequestParam(required = false, defaultValue = "false") boolean onlyAvailable,
                                          @RequestParam(required = false, defaultValue = "0") int from,
                                          @RequestParam(required = false, defaultValue = "10") int size,

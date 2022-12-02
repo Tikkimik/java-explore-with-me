@@ -8,11 +8,11 @@ import ru.practicum.ewm.user.model.User;
 import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    User getUserByEmail(String email);
 
     boolean existsByName(String name);
 
     boolean existsByEmail(String email);
 
     Page<User> getUsersByIdIn(List<Long> ids, PageRequest pageRequest);
+
 }

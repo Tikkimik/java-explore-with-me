@@ -4,7 +4,13 @@ import ru.practicum.ewm.request.dto.RequestDto;
 import ru.practicum.ewm.request.model.ParticipationRequest;
 
 public class RequestMapper {
-    public static RequestDto toDto(ParticipationRequest request) {
-        return new RequestDto(request.getId(), request.getCreated(), request.getEventId(), request.getRequesterId(), request.getStatus());
+    public static RequestDto toParticipationRequestDto(ParticipationRequest request) {
+        return new RequestDto(
+                request.getId(),
+                request.getCreated(),
+                request.getEvent().getId(),
+                request.getRequester().getId(),
+                request.getStatus()
+        );
     }
 }

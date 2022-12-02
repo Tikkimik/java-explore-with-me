@@ -2,6 +2,8 @@ package ru.practicum.ewm.event.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventRequest;
@@ -19,22 +21,23 @@ public class AdminEventController {
     private final EventService eventService;
 
     @GetMapping
-    public List<EventFullDto> adminSearchEvents(@RequestParam List<Long> users,
-                                     @RequestParam(required = false) List<String> states,
-                                     @RequestParam List<Long> categories,
-                                     @RequestParam(required = false) String rangeStart,
-                                     @RequestParam(required = false) String rangeEnd,
-                                     @RequestParam(required = false, defaultValue = "0") int from,
-                                     @RequestParam(required = false, defaultValue = "10") int size) {
+    public List<EventFullDto> adminSearchEvents(@RequestParam(required = false) List<Long> users,
+                                                @RequestParam(required = false) List<String> states,
+                                                @RequestParam(required = false) List<Long> categories,
+                                                @RequestParam(required = false) String rangeStart,
+                                                @RequestParam(required = false) String rangeEnd,
+                                                @RequestParam(required = false, defaultValue = "0") int from,
+                                                @RequestParam(required = false, defaultValue = "10") int size) {
 
+        Pageable pageable = PageRequest.of(from, size);
         log.info("Admin Search Events with users={}, states={}, categories={}, " +
-            "rangeStart={}, rangeEnd={}, from={}, size={}.", users, states, categories, rangeStart, rangeEnd, from, size);
-        return eventService.adminSearchEvents(users, states, categories, rangeStart, rangeEnd, from, size);
+                "rangeStart={}, rangeEnd={}, from={}, size={}.", users, states, categories, rangeStart, rangeEnd, from, size);
+        return eventService.adminSearchEvents(users, states, categories, rangeStart, rangeEnd, pageable);
     }
 
     @PutMapping("/{eventId}")
     public EventFullDto adminUpdateEvent(@PathVariable Long eventId,
-                               @Valid @RequestBody UpdateEventRequest eventDto) {
+                                         @Valid @RequestBody UpdateEventRequest eventDto) {
         log.info("Admin Update Event with eventId={}.", eventId);
         return eventService.adminUpdateEvent(eventId, eventDto);
     }

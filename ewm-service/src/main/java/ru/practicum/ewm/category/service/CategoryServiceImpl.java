@@ -14,6 +14,9 @@ import ru.practicum.ewm.exceptions.UpdateException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.ewm.category.mapper.CategoryMapper.toCategory;
+import static ru.practicum.ewm.category.mapper.CategoryMapper.toCategoryDto;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
@@ -23,7 +26,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryDto> getCategories(int from, int size) {
         PageRequest pageRequest = PageRequest.of(from / size, size, Sort.by("id").ascending());
-        return categoryRepository.findAll(pageRequest).stream().map(CategoryMapper::toCategoryDto).collect(Collectors.toList());
+        return categoryRepository.findAll(pageRequest).stream()
+                .map(CategoryMapper::toCategoryDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -31,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (!categoryRepository.existsById(catId)) {
             throw new NotFoundParameterException("Wrong category id (catId).");
         }
-        return CategoryMapper.toCategoryDto(categoryRepository.getReferenceById(catId));
+        return toCategoryDto(categoryRepository.getReferenceById(catId));
     }
 
     @Override
@@ -47,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (!categoryRepository.existsById(categoryDto.getId()))
             throw new ConflictException("Category is not exist.");
 
-        return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
+        return toCategoryDto(categoryRepository.save(toCategory(categoryDto)));
     }
 
     @Override
@@ -57,7 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (categoryRepository.existsByName(categoryDto.getName()))
             throw new ConflictException("Name already exist.");
 
-        return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
+        return toCategoryDto(categoryRepository.save(toCategory(categoryDto)));
     }
 
     @Override

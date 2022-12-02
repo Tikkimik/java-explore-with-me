@@ -11,6 +11,7 @@ import ru.practicum.ewm.request.model.ParticipationRequest;
 import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.request.repository.ParticipationRequestsRepository;
+import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -18,7 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static ru.practicum.ewm.request.mapper.RequestMapper.toDto;
+import static ru.practicum.ewm.request.mapper.RequestMapper.toParticipationRequestDto;
+
 
 @Service
 @RequiredArgsConstructor
@@ -29,48 +31,41 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     @Override
     public List<RequestDto> getUserRequests(Long userId) {
-
-        if (!userRepository.existsById(userId))
-            throw new IncorrectParameterException("Wrong user id (userId).");
-
-        return participationRequestsRepository.getAllByRequesterId(userId).stream()
-                .map(RequestMapper::toDto)
+        return participationRequestsRepository.findAllByRequesterId(userId).stream()
+                .map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public RequestDto createUserRequest(Long userId, Long eventId) {
-        if (!eventRepository.existsById(eventId))
-            throw new IncorrectParameterException("Wrong event id (eventId).");
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IncorrectParameterException("Event is not found!"));
+        User requester = userRepository.findById(userId).orElseThrow(() -> new IncorrectParameterException("User is not found!"));
 
-        if (!userRepository.existsById(userId))
-            throw new IncorrectParameterException("Wrong user id (userId).");
-
-        Event event = eventRepository.getReferenceById(eventId);
-
-        if (Objects.equals(event.getInitiator(), userId))
+        if (Objects.equals(event.getInitiator(), requester))
             throw new UpdateException("you can't make request for your own event");
 
-        if (!event.getState().equals("PUBLISHED"))
+        if (event.getPublishedOn() == null)
             throw new UpdateException("Wrong state. Event not published.");
 
-        if (Objects.equals(event.getParticipantLimit(), participationRequestsRepository.countParticipationRequestByEventIdAndStatus(event.getId(), "CONFIRMED")))
+        if (participationRequestsRepository.getAllByEventId(eventId).size() >= event.getParticipantLimit())
             throw new UpdateException("Event no places.");
 
         if (participationRequestsRepository.existsByRequesterIdAndEventId(userId, event.getId()))
             throw new UpdateException("Request already exist");
 
-        ParticipationRequest request = new ParticipationRequest(
-                LocalDateTime.now(),
-                eventId,
-                userId,
-                RequestStatus.PENDING.toString()
-        );
+        ParticipationRequest request = new ParticipationRequest();
+        request.setRequester(requester);
+        request.setEvent(eventRepository.getReferenceById(eventId));
+        request.setCreated(LocalDateTime.now());
+        request.setInitiator(event.getInitiator());
 
         if (!event.isRequestModeration() || event.getParticipantLimit() == 0)
             request.setStatus(RequestStatus.CONFIRMED.toString());
+         else
+            request.setStatus(RequestStatus.PENDING.toString());
 
-        return toDto(participationRequestsRepository.save(request));
+        event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+        return toParticipationRequestDto(participationRequestsRepository.save(request));
     }
 
     @Override
@@ -84,6 +79,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
         ParticipationRequest request = participationRequestsRepository.getReferenceById(requestId);
         request.setStatus(RequestStatus.CANCELED.toString());
-        return toDto(participationRequestsRepository.save(request));
+        return toParticipationRequestDto(participationRequestsRepository.save(request));
     }
 }

@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 public class UserShortDto {
+
     private Long id;
 
     @NotNull

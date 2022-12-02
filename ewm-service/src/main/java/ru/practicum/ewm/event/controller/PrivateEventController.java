@@ -2,6 +2,8 @@ package ru.practicum.ewm.event.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
@@ -26,7 +28,8 @@ public class PrivateEventController {
                                              @RequestParam(required = false, defaultValue = "0") int from,
                                              @RequestParam(required = false, defaultValue = "10") int size) {
         log.info("Get User Events with from={}, size={}.", from, size);
-        return eventService.getUserEvents(userId, from, size);
+        Pageable pageable = PageRequest.of(from, size);
+        return eventService.getUserEvents(userId, pageable);
     }
 
     @PostMapping
