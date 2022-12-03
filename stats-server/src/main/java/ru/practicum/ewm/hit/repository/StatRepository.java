@@ -12,14 +12,6 @@ import java.util.List;
 @Repository
 public interface StatRepository extends JpaRepository<Stats, Long> {
 
-//    List<Stats> getStatsByTimestampAfterAndTimestampBefore(LocalDateTime start, LocalDateTime end);
-//
-//    List<Stats> getStatsByTimestampAfterAndTimestampBeforeAndUriIn(LocalDateTime start, LocalDateTime end, List<String> uri);
-//
-//    Long countStatsByUri(String uri);
-//
-//    List<Stats> findDistinctByTimestampBetweenAndUri(LocalDateTime start, LocalDateTime end, List<String> uri, boolean unique);
-
     @Query("SELECT new ru.practicum.ewm.hit.dto.ReturnStatDto(s.app, s.uri, count (distinct s.ip)) " +
             "FROM Stats as s " +
             "WHERE s.timestamp BETWEEN ?1 AND ?2 " +
@@ -34,4 +26,10 @@ public interface StatRepository extends JpaRepository<Stats, Long> {
             "GROUP BY s.app, s.uri ")
     List<ReturnStatDto> getAll(LocalDateTime start, LocalDateTime end, List<String> uri);
 
+    Long countAllByUri(String uri);
+
+    @Query("SELECT count (s.uri) " +
+            "FROM Stats as s " +
+            "WHERE s.uri IN ?1 ")
+    List<Long> countViewsByUri(String uri);
 }

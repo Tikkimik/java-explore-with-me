@@ -11,4 +11,8 @@ public interface StatService {
 
     List<ReturnStatDto> get(String start, String end, List<String> uris, boolean unique);
 
+    Long getEventViewStat(CreateStatDto createStatDto);
+
+    List<Long> getEventsViewStat(CreateStatDto createStatDto);
+
 }

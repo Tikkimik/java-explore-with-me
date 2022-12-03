@@ -1,7 +1,9 @@
 package ru.practicum.ewm.stats.clients;
 
-import org.springframework.http.*;
-import org.springframework.lang.NonNull;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,7 +18,11 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.POST, path, body);
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, @NonNull T body) {
+    protected <T> ResponseEntity<Object> get(String path, T body) {
+        return makeAndSendRequest(HttpMethod.GET, path, body);
+    }
+
+    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, @Nullable T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body);
 
         ResponseEntity<Object> serverResponse;

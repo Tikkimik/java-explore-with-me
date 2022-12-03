@@ -27,11 +27,14 @@ import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.ParticipationRequest;
 import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.request.repository.ParticipationRequestsRepository;
+import ru.practicum.ewm.stats.clients.EventClient;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -49,25 +52,32 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestsRepository requestsRepository;
-
+    private final EventClient eventClient;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    public EventFullDto getEvent(Long eventId) {
+    public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
 
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IncorrectParameterException("Wrong event id (eventId). Event not found."));
+        Event event = eventRepository.findById(eventId).orElseThrow(() ->
+                new IncorrectParameterException("Wrong event id (eventId). Event not found."));
 
         if (!event.getState().equals("PUBLISHED"))
             throw new IncorrectParameterException("Event published.");
 
-        event.setViews(event.getViews() + 1);
-        eventRepository.save(event);
-        return mapToEventFullDto(event);
+        try {
+            long views = Long.parseLong(eventClient.getHit(request).getBody().toString());
+            event.setViews(views);
+        } catch (Exception e) {
+            throw new IncorrectParameterException("Event Client request error. Views not updated.");
+        }
+
+        return mapToEventFullDto(eventRepository.save(event));
     }
+
 
     @Override
     public List<EventFullDto> getEvents(String text, List<Long> categories, boolean paid, String rangeStart,
-                                        String rangeEnd, String sort, boolean onlyAvailable, int from, int size) {
+                                        String rangeEnd, String sort, boolean onlyAvailable, int from, int size, HttpServletRequest request) {
         LocalDateTime start = null;
         LocalDateTime end = null;
 
@@ -83,6 +93,17 @@ public class EventServiceImpl implements EventService {
         } else {
             list = eventRepository.findByParams(text, categories, paid, start, end,
                     onlyAvailable, PageRequest.of(from, size, Sort.by("eventDate").ascending()));
+        }
+
+        List<Long> lingList;
+        try {
+            String response = eventClient.getHits(request).getBody().toString();
+            String str = response.substring(1, response.length() - 1);
+            List<String> lis = Arrays.asList(str.split(", "));
+            lingList = lis.stream().map(Long::parseLong).collect(Collectors.toList());
+            for (int i = 0; i < list.getContent().size(); i++) list.getContent().get(i).setViews(lingList.get(i));
+        } catch (Exception e) {
+            throw new IncorrectParameterException("Event Client request error. Views not updated for Events.");
         }
 
         return list.stream()

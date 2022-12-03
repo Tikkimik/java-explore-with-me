@@ -30,8 +30,45 @@ public class EventClient extends BaseClient {
                 "ewm-service",
                 request.getRequestURI(),
                 request.getRemoteAddr(),
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
 
         return post("", hitDto);
+    }
+
+    public ResponseEntity<Object> getHit(HttpServletRequest request) {
+
+        HitDto hitDto = new HitDto(
+                "ewm-service",
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+
+        return post("/sts", hitDto);
+    }
+
+    public ResponseEntity<Object> getHits(HttpServletRequest request) {
+
+        HitDto hitDto = new HitDto(
+                "ewm-service",
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+
+        return post("/stss", hitDto);
+    }
+
+    public ResponseEntity<Object> get(HttpServletRequest request) {
+
+        HitDto hitDto = new HitDto(
+                "ewm-service",
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+
+        return get("", hitDto);
     }
 }

@@ -31,23 +31,23 @@ public class PublicEventController {
                                          @RequestParam(required = false, defaultValue = "10") int size,
                                          HttpServletRequest request) {
 
-        log.info("Event Client add request in getEvents method with={}.", request);
+        log.info("Event Client add request in getEvents method.");
         eventClient.addHit(request);
 
         log.info("Public Event Controller: Get Events with" +
 			" text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}.",
 			text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
-        return eventService.getEvents(text, categories, paid, rangeStart, rangeEnd, sort, onlyAvailable, from, size);
+        return eventService.getEvents(text, categories, paid, rangeStart, rangeEnd, sort, onlyAvailable, from, size, request);
     }
 
     @GetMapping("/{eventId}")
     public EventFullDto getEvent(@PathVariable Long eventId,
                                  HttpServletRequest request) {
 
-        log.info("Event Client add request in getEvent method with={}.", request);
+        log.info("Event Client add request in getEvent method.");
         eventClient.addHit(request);
 
-        return eventService.getEvent(eventId);
+        return eventService.getEvent(eventId, request);
     }
 }

@@ -17,15 +17,27 @@ public class StatController {
 
     private final StatService statService;
 
-    @PostMapping
-    @RequestMapping("/hit")
+    @PostMapping("/hit")
     public void addStat(@Valid @RequestBody CreateStatDto createStatDto) {
         log.info("add hit in stat service.");
         statService.addStat(createStatDto);
     }
 
-    @GetMapping
-    @RequestMapping("/stats")
+    @PostMapping("/hit/sts")
+    public Long getStatistic(@Valid @RequestBody CreateStatDto createStatDto) {
+        log.info("get hit stat in stat.");
+        return statService.getEventViewStat(createStatDto);
+    }
+
+    @PostMapping("/hit/stss")
+    public List<Long> getStatisticsas(@Valid @RequestBody CreateStatDto createStatDto) {
+        log.info("get hit stat in stat.");
+        return statService.getEventsViewStat(createStatDto);
+    }
+
+
+
+    @GetMapping("/stats")
     public List<ReturnStatDto> get(@RequestParam String start,
                                    @RequestParam String end,
                                    @RequestParam List<String> uris,

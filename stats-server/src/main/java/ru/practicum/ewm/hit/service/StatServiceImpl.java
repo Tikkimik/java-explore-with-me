@@ -9,6 +9,7 @@ import ru.practicum.ewm.hit.repository.StatRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
 import static ru.practicum.ewm.hit.mapper.StatMapper.toStats;
 
 @Service
@@ -32,5 +33,15 @@ public class StatServiceImpl implements StatService {
         } else {
             return statRepository.getAll(starts, ends, uris);
         }
+    }
+
+    @Override
+    public Long getEventViewStat(CreateStatDto createStatDto) {
+        return statRepository.countAllByUri(createStatDto.getUri());
+    }
+
+    @Override
+    public List<Long> getEventsViewStat(CreateStatDto createStatDto) {
+        return statRepository.countViewsByUri(createStatDto.getUri());
     }
 }
