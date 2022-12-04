@@ -64,7 +64,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
          else
             request.setStatus(RequestStatus.PENDING.toString());
 
-        event.setConfirmedRequests(event.getConfirmedRequests() + 1);
         return toParticipationRequestDto(participationRequestsRepository.save(request));
     }
 

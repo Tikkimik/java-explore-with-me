@@ -15,4 +15,9 @@ public interface ParticipationRequestsRepository extends JpaRepository<Participa
     List<ParticipationRequest> findAllByEventAndStatus(Event event, String status);
 
     boolean existsByRequesterIdAndEventId(Long requestorId, Long eventId);
+
+    Long countParticipationRequestByEventAndStatus(Event event, String status);
+
+    List<Long> countParticipationRequestByEventInAndStatus(List<Event> event, String status);
+
 }

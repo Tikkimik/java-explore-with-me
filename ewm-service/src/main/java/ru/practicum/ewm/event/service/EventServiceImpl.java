@@ -34,11 +34,13 @@ import ru.practicum.ewm.user.repository.UserRepository;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static ru.practicum.ewm.event.mapper.EventMapper.mapNewEventDtoToEvent;
 import static ru.practicum.ewm.event.mapper.EventMapper.mapToEventFullDto;
 
@@ -53,10 +55,12 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestsRepository requestsRepository;
     private final EventClient eventClient;
-    private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter dtf = ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
+
+        List<Long> views = new ArrayList<>();
 
         Event event = eventRepository.findById(eventId).orElseThrow(() ->
                 new IncorrectParameterException("Wrong event id (eventId). Event not found."));
@@ -65,12 +69,22 @@ public class EventServiceImpl implements EventService {
             throw new IncorrectParameterException("Event published.");
 
         try {
-            long views = Long.parseLong(eventClient.getHit(request).getBody().toString());
-            event.setViews(views);
+            String response = eventClient.getStats(null, null, request.getRequestURI(), false).getBody().toString();
+            String str = response.substring(1, response.length() - 1);
+            String[] lis = str.split("} ");
+
+            for (String strs : lis) {
+                int index = strs.indexOf("hits") + 5;
+                strs = strs.substring(index, response.length() - 3);
+                views.add(Long.valueOf(strs));
+            }
+
         } catch (Exception e) {
             throw new IncorrectParameterException("Event Client request error. Views not updated.");
         }
 
+        event.setConfirmedRequests(requestsRepository.countParticipationRequestByEventAndStatus(event, RequestStatus.CONFIRMED.toString()));
+        event.setViews(views.get(0));
         return mapToEventFullDto(eventRepository.save(event));
     }
 
@@ -78,6 +92,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> getEvents(String text, List<Long> categories, boolean paid, String rangeStart,
                                         String rangeEnd, String sort, boolean onlyAvailable, int from, int size, HttpServletRequest request) {
+
         LocalDateTime start = null;
         LocalDateTime end = null;
 
@@ -85,28 +100,39 @@ public class EventServiceImpl implements EventService {
         if (rangeEnd != null) end = LocalDateTime.parse(rangeEnd, dtf);
         if (text != null) text = text.toLowerCase();
 
-        Page<Event> list;
+        Page<Event> pageEvents = eventRepository.findByParams(text, categories, paid, start, end,
+                onlyAvailable, PageRequest.of(from, size, Sort.by("eventDate").ascending()));
 
-        if (sort.equals("VIEWS")) {
-            list = eventRepository.findByParams(text, categories, paid, start, end,
-                    onlyAvailable, PageRequest.of(from, size, Sort.by("views").ascending()));
-        } else {
-            list = eventRepository.findByParams(text, categories, paid, start, end,
-                    onlyAvailable, PageRequest.of(from, size, Sort.by("eventDate").ascending()));
+        List<Event> listEvents = pageEvents.toList();
+
+        if (!listEvents.isEmpty()) {
+
+            List<Long> listConfirmedRequests = requestsRepository.countParticipationRequestByEventInAndStatus(listEvents, RequestStatus.CONFIRMED.toString());
+
+            try {
+                String response = eventClient.getStats(null, null, request.getRequestURI(), false).getBody().toString();
+                String str = response.substring(1, response.length() - 1);
+                String[] lis = str.split("} ");
+
+                if (lis.length == listEvents.size()) {
+                    for (int i = 0; i < listEvents.size(); i++) {
+                        int index = lis[i].indexOf("hits") + 5;
+                        lis[i] = lis[i].substring(index, response.length() - 3);
+                        listEvents.get(i).setConfirmedRequests(listConfirmedRequests.get(i));
+                        listEvents.get(i).setViews(Long.valueOf(lis[i]));
+                    }
+                } else {
+                    throw new IncorrectParameterException("Stat error. List sizes not equals.");
+                }
+            } catch (Exception e) {
+                throw new IncorrectParameterException("Event Client request error. Views not updated.");
+            }
+
+            if (sort.equals("VIEWS"))
+                listEvents.sort(Comparator.comparingLong(Event::getViews));
         }
 
-        List<Long> lingList;
-        try {
-            String response = eventClient.getHits(request).getBody().toString();
-            String str = response.substring(1, response.length() - 1);
-            List<String> lis = Arrays.asList(str.split(", "));
-            lingList = lis.stream().map(Long::parseLong).collect(Collectors.toList());
-            for (int i = 0; i < list.getContent().size(); i++) list.getContent().get(i).setViews(lingList.get(i));
-        } catch (Exception e) {
-            throw new IncorrectParameterException("Event Client request error. Views not updated for Events.");
-        }
-
-        return list.stream()
+        return listEvents.stream()
                 .map(EventMapper::mapToEventFullDto)
                 .collect(Collectors.toList());
     }
@@ -231,23 +257,18 @@ public class EventServiceImpl implements EventService {
             requests.forEach(pr -> pr.setStatus(RequestStatus.CANCELED.toString()));
         }
 
-        event.setConfirmedRequests(confirmedRequests + 1);
         eventRepository.save(event);
-
         return RequestMapper.toParticipationRequestDto(request);
     }
 
     @Override
     public RequestDto rejectEventRequest(Long userId, Long eventId, Long reqId) {
 
-        Event event = eventRepository.findEventByIdAndInitiatorId(eventId, userId);
-
         ParticipationRequest request = requestsRepository.findById(reqId).orElseThrow(() ->
                 new IncorrectParameterException("Wrong request id (requestId)."));
 
         request.setStatus(RequestStatus.REJECTED.toString());
         requestsRepository.save(request);
-        event.setConfirmedRequests(event.getConfirmedRequests() - 1);
         return RequestMapper.toParticipationRequestDto(request);
     }
 

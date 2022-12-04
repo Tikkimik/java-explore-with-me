@@ -35,8 +35,6 @@ public class StatController {
         return statService.getEventsViewStat(createStatDto);
     }
 
-
-
     @GetMapping("/stats")
     public List<ReturnStatDto> get(@RequestParam String start,
                                    @RequestParam String end,

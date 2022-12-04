@@ -1,10 +1,12 @@
 package ru.practicum.ewm.stats.clients;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 public class BaseClient {
     protected final RestTemplate rest;
@@ -17,8 +19,23 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.POST, path, body);
     }
 
-    protected <T> ResponseEntity<Object> get(String path, T body) {
-        return makeAndSendRequest(HttpMethod.GET, path, body);
+    protected <T> ResponseEntity<Object> get(String path, @Nullable Map<String, Object> parameters) {
+        return makeAndSendRequest(path, parameters);
+    }
+
+    private <T> ResponseEntity<Object> makeAndSendRequest(String path, Map<String, Object> parameters) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpEntity<T> requestEntity = new HttpEntity<>(headers);
+        ResponseEntity<Object> statServerResponse;
+
+        try {
+            statServerResponse = rest.exchange(path, HttpMethod.GET, requestEntity, Object.class, parameters);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
+        }
+        return prepareStatResponse(statServerResponse);
     }
 
     private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, T body) {
@@ -30,19 +47,17 @@ public class BaseClient {
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }
-        return prepareResponse(serverResponse);
+        return prepareStatResponse(serverResponse);
     }
 
-    private static ResponseEntity<Object> prepareResponse(ResponseEntity<Object> response) {
-        if (response.getStatusCode().is2xxSuccessful()) {
+    private static ResponseEntity<Object> prepareStatResponse(ResponseEntity<Object> response) {
+        if (response.getStatusCode().is2xxSuccessful())
             return response;
-        }
 
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(response.getStatusCode());
 
-        if (response.hasBody()) {
+        if (response.hasBody())
             return responseBuilder.body(response.getBody());
-        }
 
         return responseBuilder.build();
     }
