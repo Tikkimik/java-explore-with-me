@@ -1,7 +1,6 @@
 package ru.practicum.ewm.stats.clients;
 
 import org.springframework.http.*;
-import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
