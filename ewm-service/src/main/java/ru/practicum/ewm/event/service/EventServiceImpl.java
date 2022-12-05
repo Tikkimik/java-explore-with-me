@@ -2,7 +2,6 @@ package ru.practicum.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,6 +27,7 @@ import ru.practicum.ewm.request.model.ParticipationRequest;
 import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.request.repository.ParticipationRequestsRepository;
 import ru.practicum.ewm.stats.clients.EventClient;
+import ru.practicum.ewm.stats.hit.Stat;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 
@@ -49,12 +49,12 @@ import static ru.practicum.ewm.event.mapper.EventMapper.mapToEventFullDto;
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
 
+    private final EventClient eventClient;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestsRepository requestsRepository;
-    private final EventClient eventClient;
     private static final DateTimeFormatter dtf = ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -88,41 +88,77 @@ public class EventServiceImpl implements EventService {
         return mapToEventFullDto(eventRepository.save(event));
     }
 
-
     @Override
     public List<EventFullDto> getEvents(String text, List<Long> categories, boolean paid, String rangeStart,
                                         String rangeEnd, String sort, boolean onlyAvailable, int from, int size, HttpServletRequest request) {
-
-        LocalDateTime start = null;
-        LocalDateTime end = null;
-
-        if (rangeStart != null) start = LocalDateTime.parse(rangeStart, dtf);
-        if (rangeEnd != null) end = LocalDateTime.parse(rangeEnd, dtf);
+        LocalDateTime start;
+        LocalDateTime end;
+        if (rangeStart != null) {
+            start = LocalDateTime.parse(rangeStart, dtf);
+        } else {
+            start = LocalDateTime.parse(LocalDateTime.of(2000, 1, 1, 1, 1).toString());
+        }
+        if (rangeEnd != null) {
+            end = LocalDateTime.parse(rangeEnd, dtf);
+        } else {
+            end = LocalDateTime.parse(LocalDateTime.of(2050, 1, 1, 1, 1).toString());
+        }
         if (text != null) text = text.toLowerCase();
 
-        Page<Event> pageEvents = eventRepository.findByParams(text, categories, paid, start, end,
+        List<Event> listEvents = eventRepository.findByParams(text, categories, paid, start, end,
                 onlyAvailable, PageRequest.of(from, size, Sort.by("eventDate").ascending()));
 
-        List<Event> listEvents = pageEvents.toList();
 
         if (!listEvents.isEmpty()) {
-
             List<Long> listConfirmedRequests = requestsRepository.countParticipationRequestByEventInAndStatus(listEvents, RequestStatus.CONFIRMED.toString());
 
             try {
-                String response = eventClient.getStats(null, null, request.getRequestURI(), false).getBody().toString();
-                String str = response.substring(1, response.length() - 1);
-                String[] lis = str.split("} ");
+                Object o = eventClient.getStats(rangeStart, rangeEnd, request.getRequestURI(), false).getBody();
 
-                if (lis.length == listEvents.size()) {
-                    for (int i = 0; i < listEvents.size(); i++) {
-                        int index = lis[i].indexOf("hits") + 5;
-                        lis[i] = lis[i].substring(index, response.length() - 3);
-                        listEvents.get(i).setConfirmedRequests(listConfirmedRequests.get(i));
-                        listEvents.get(i).setViews(Long.valueOf(lis[i]));
+                assert o != null;
+                String response = o.toString();
+                String str = response.substring(1, response.length() - 1);
+                String[] lis = str.split("},");
+                List<Stat> viewStats = new ArrayList<>();
+                if (!lis[0].equals("")) {
+                    for (String s : lis) {
+                        System.out.println("эту строку режем!!!!!!!!!!" + s);
+                        int a = 0;
+
+                        if (s.contains("}")) {
+                            a = 1;
+                        }
+
+                        int b = 0;
+
+                        if (s.contains("]")) {
+                            b = 1;
+                        }
+
+                        int indexHit = s.indexOf("hits") + 5;
+                        String substringHit = s.substring(indexHit, s.length() - a);
+
+                        int indexUriStart = s.indexOf("uri") + 4 + b;
+                        int indexEventIdEnd = indexHit - 7 - b;
+                        String substringUri = s.substring(indexUriStart, indexEventIdEnd);
+
+                        int indexEventIdStart = s.indexOf("events") + 7;
+                        String substringId = s.substring(indexEventIdStart, indexEventIdEnd);
+
+                        viewStats.add(new Stat(Long.valueOf(substringId), Long.valueOf(substringHit), substringUri));
+                        eventClient.addHit(request, substringUri);
                     }
-                } else {
-                    throw new IncorrectParameterException("Stat error. List sizes not equals.");
+
+                    int i = 0;
+                    for (Event event : listEvents) {
+                        event.setConfirmedRequests(listConfirmedRequests.get(i));
+                        for (Stat stat : viewStats) {
+                            if (event.getId().equals(stat.getId())) {
+                                event.setViews(stat.getViews());
+                            }
+                        }
+                        i++;
+                    }
                 }
             } catch (Exception e) {
                 throw new IncorrectParameterException("Event Client request error. Views not updated.");

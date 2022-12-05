@@ -32,7 +32,7 @@ public class PublicEventController {
                                          HttpServletRequest request) {
 
         log.info("Event Client add request in getEvents method.");
-        eventClient.addHit(request);
+        eventClient.addHit(request, "/events/0");
 
         log.info("Public Event Controller: Get Events with" +
 			" text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}.",

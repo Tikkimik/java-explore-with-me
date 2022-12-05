@@ -38,7 +38,20 @@ public class EventClient extends BaseClient {
         return post("/hit", hitDto);
     }
 
+    public ResponseEntity<Object> addHit(HttpServletRequest request, String s) {
+
+        HitDto hitDto = new HitDto(
+                "ewm-service",
+                s,
+                request.getRemoteAddr(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+
+        return post("/hit", hitDto);
+    }
+
     public ResponseEntity<Object> getStats(@Nullable String start, @Nullable String end, String uris, @Nullable boolean unique) {
+
 
         if (start == null)
             start = LocalDateTime.of(2000, 1, 1, 0, 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

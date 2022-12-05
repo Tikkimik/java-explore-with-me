@@ -8,7 +8,7 @@ import ru.practicum.ewm.hit.repository.StatRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
 
 import static ru.practicum.ewm.hit.mapper.StatMapper.toStats;
 
@@ -28,20 +28,13 @@ public class StatServiceImpl implements StatService {
         LocalDateTime starts = LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         LocalDateTime ends = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
+        if (uris.size() == 1 && uris.get(0).equals("/events"))
+            return statRepository.getStatForAllEvents(starts, ends, uris);
+
         if (unique) {
             return statRepository.getAllUniqueIp(starts, ends, uris);
         } else {
             return statRepository.getAll(starts, ends, uris);
         }
-    }
-
-    @Override
-    public Long getEventViewStat(CreateStatDto createStatDto) {
-        return statRepository.countAllByUri(createStatDto.getUri());
-    }
-
-    @Override
-    public List<Long> getEventsViewStat(CreateStatDto createStatDto) {
-        return statRepository.countViewsByUri(createStatDto.getUri());
     }
 }

@@ -15,8 +15,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
     Page<Event> findAllByInitiatorId(Long id, Pageable pageable);
 
-    Event findEventByIdAndInitiatorId(Long eventId, Long userId);
-
     @Query("SELECT e " +
             "FROM Event e " +
             "WHERE (:pay is null OR e.paid = :pay) " +
@@ -24,7 +22,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
             "AND (:cat is null OR e.category.id IN :cat) " +
             "AND (e.eventDate BETWEEN :start AND :end) " +
             "AND (:onlyAv is null OR e.publishedOn is not null)")
-    Page<Event> findByParams(@Param("text") String text, @Param("cat") List<Long> categories,
+    List<Event> findByParams(@Param("text") String text, @Param("cat") List<Long> categories,
                              @Param("pay") Boolean paid, @Param("start") LocalDateTime rangeStart,
                              @Param("end") LocalDateTime rangeEnd, @Param("onlyAv") Boolean onlyAv, Pageable pageable);
 
@@ -35,4 +33,5 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     Page<Event> findByParamsAdmin(@Param("users") List<Long> users, @Param("states") List<String> states,
                                   @Param("cat") List<Long> categories, @Param("start") LocalDateTime rangeStart,
                                   @Param("end") LocalDateTime rangeEnd, Pageable pageable);
+
 }

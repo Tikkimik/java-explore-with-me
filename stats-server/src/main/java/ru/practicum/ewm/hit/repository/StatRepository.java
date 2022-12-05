@@ -26,10 +26,10 @@ public interface StatRepository extends JpaRepository<Stats, Long> {
             "GROUP BY s.app, s.uri ")
     List<ReturnStatDto> getAll(LocalDateTime start, LocalDateTime end, List<String> uri);
 
-    Long countAllByUri(String uri);
-
-    @Query("SELECT count (s.uri) " +
+    @Query("SELECT new ru.practicum.ewm.hit.dto.ReturnStatDto(s.app, s.uri, count (s.ip)) " +
             "FROM Stats as s " +
-            "WHERE s.uri IN ?1 ")
-    List<Long> countViewsByUri(String uri);
+            "WHERE s.timestamp BETWEEN ?1 AND ?2 " +
+            "GROUP BY s.app, s.uri ")
+    List<ReturnStatDto> getStatForAllEvents(LocalDateTime start, LocalDateTime end, List<String> uri);
+
 }
