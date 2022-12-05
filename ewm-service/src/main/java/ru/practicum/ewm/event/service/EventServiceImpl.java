@@ -114,8 +114,6 @@ public class EventServiceImpl implements EventService {
 
             try {
                 Object o = eventClient.getStats(rangeStart, rangeEnd, request.getRequestURI(), false).getBody();
-
-                assert o != null;
                 String response = o.toString();
                 String str = response.substring(1, response.length() - 1);
                 String[] lis = str.split("},");
