@@ -97,24 +97,19 @@ public class EventServiceImpl implements EventService {
 
         List<Event> listEvents = eventRepository.findByParams(text, categories, paid, start, end,
                 onlyAvailable, PageRequest.of(from, size, Sort.by("eventDate").ascending()));
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!" + listEvents);
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!" + listEvents.size());
 
         if (!listEvents.isEmpty()) {
             List<Long> listConfirmedRequests = requestsRepository.countParticipationRequestByEventInAndStatus(listEvents, RequestStatus.CONFIRMED.toString());
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!" + listConfirmedRequests.size());
 
-//            if (listConfirmedRequests.size() == listEvents.size()) {
-            for (Event event : listEvents) {
-                for (Stat stat : stats) {
-                    if (event.getId().equals(stat.getId())) {
-                        event.setViews(stat.getHits());
+            if (listConfirmedRequests.size() == listEvents.size()) {
+                for (Event event : listEvents) {
+                    for (Stat stat : stats) {
+                        if (event.getId().equals(stat.getId())) {
+                            event.setViews(stat.getHits());
+                        }
                     }
                 }
             }
-//            } else {
-//                throw new IncorrectParameterException("ListConfirmedRequests and listEvents has not equals sizes.");
-//            }
 
             if (sort.equals("VIEWS"))
                 listEvents.sort(Comparator.comparingLong(Event::getViews));
