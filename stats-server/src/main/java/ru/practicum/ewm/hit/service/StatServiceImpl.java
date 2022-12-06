@@ -28,13 +28,26 @@ public class StatServiceImpl implements StatService {
         LocalDateTime starts = LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         LocalDateTime ends = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        if (uris.size() == 1 && uris.get(0).equals("/events"))
-            return statRepository.getStatForAllEvents(starts, ends, uris);
+        if (uris.size() == 1 && uris.get(0).equals("/events")) {
+            List<ReturnStatDto> getasdf = statRepository.getStatForAllEvents();
+
+            for (ReturnStatDto rsd : getasdf) {
+                if (rsd.getUri().length() == 7) {
+                    getasdf.remove(rsd);
+                    break;
+                }
+            }
+
+            System.out.println(getasdf + " " + start + " " + end + " " + uris);
+            return getasdf;
+        }
 
         if (unique) {
             return statRepository.getAllUniqueIp(starts, ends, uris);
         } else {
-            return statRepository.getAll(starts, ends, uris);
+            List<ReturnStatDto> getasdf = statRepository.getAll(starts, ends, uris);
+            System.out.println(getasdf + " " + start + " " + end + " " + uris);
+            return getasdf;
         }
     }
 }

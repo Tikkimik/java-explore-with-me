@@ -1,16 +1,32 @@
 package ru.practicum.ewm.stats.hit;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class Stat {
 
     Long id;
 
-    Long views;
+    Long hits;
 
     String uri;
 
+    String app;
+
+    public Stat(Long hits, String uri, String app) {
+        this.hits = hits;
+        this.uri = uri;
+        this.app = app;
+        this.id = Long.parseLong(uri.substring(8));
+    }
+
+    @Override
+    public String toString() {
+        return "Stat{" +
+                "id=" + id +
+                ", hits=" + hits +
+                ", uri='" + uri + '\'' +
+                ", app='" + app + '\'' +
+                '}';
+    }
 }

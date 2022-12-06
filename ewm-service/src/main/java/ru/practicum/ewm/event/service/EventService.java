@@ -6,6 +6,7 @@ import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.dto.UpdateEventRequest;
 import ru.practicum.ewm.request.dto.RequestDto;
+import ru.practicum.ewm.stats.hit.Stat;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -13,10 +14,10 @@ import java.util.List;
 public interface EventService {
 
     //PublicEventController
-    EventFullDto getEvent(Long eventId, HttpServletRequest request);
+    EventFullDto getEvent(Long eventId, Stat[] stats, HttpServletRequest request);
 
     List<EventFullDto> getEvents(String text, List<Long> categories, boolean paid, String rangeStart,
-                                 String rangeEnd, String sort, boolean onlyAvailable, int from, int size, HttpServletRequest request);
+                                 String rangeEnd, String sort, boolean onlyAvailable, int from, int size, Stat[] stats, HttpServletRequest request);
 
     //PrivateEventController
     List<EventShortDto> getUserEvents(Long userId, Pageable pageable);

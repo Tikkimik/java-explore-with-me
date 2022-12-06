@@ -18,6 +18,15 @@ public class StatMapper {
                 statDto.getTimestamp());
     }
 
+    public static CreateStatDto toCreateStatDto(Stats stats) {
+        return new CreateStatDto(
+                stats.getApp(),
+                stats.getUri(),
+                stats.getIp(),
+                stats.getTimestamp()
+        );
+    }
+
 
     public static ReturnStatDto returnStatDto(Stats stats, Long hits) {
         return new ReturnStatDto(stats.getApp(), stats.getUri(), hits);

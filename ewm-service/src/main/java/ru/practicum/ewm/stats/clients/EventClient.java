@@ -9,6 +9,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.ewm.stats.hit.HitDto;
+import ru.practicum.ewm.stats.hit.Stat;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -38,11 +39,11 @@ public class EventClient extends BaseClient {
         return post("/hit", hitDto);
     }
 
-    public ResponseEntity<Object> addHit(HttpServletRequest request, String s) {
+    public ResponseEntity<Object> addHit(HttpServletRequest request, String uri) {
 
         HitDto hitDto = new HitDto(
                 "ewm-service",
-                s,
+                uri,
                 request.getRemoteAddr(),
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
@@ -50,8 +51,7 @@ public class EventClient extends BaseClient {
         return post("/hit", hitDto);
     }
 
-    public ResponseEntity<Object> getStats(@Nullable String start, @Nullable String end, String uris, @Nullable boolean unique) {
-
+    public ResponseEntity<Stat[]> getEventStats(@Nullable String start, @Nullable String end, String uris, @Nullable boolean unique) {
 
         if (start == null)
             start = LocalDateTime.of(2000, 1, 1, 0, 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
