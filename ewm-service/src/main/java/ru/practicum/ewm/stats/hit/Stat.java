@@ -5,13 +5,13 @@ import lombok.Getter;
 @Getter
 public class Stat {
 
-    Long id;
+    private Long id;
 
-    Long hits;
+    private Long hits;
 
-    String uri;
+    private String uri;
 
-    String app;
+    private String app;
 
     public Stat(Long hits, String uri, String app) {
         this.hits = hits;
